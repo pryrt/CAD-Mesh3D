@@ -82,7 +82,7 @@ to represent the x, y, and z coordinates in 3D space.
 sub createVertex {
     croak sprintf("!ERROR! createVertex(x,y,z): requires 3 coordinates; you supplied %d", scalar @_)
         unless 3==@_;
-    return [@_];
+    return V(@_);
 }
 
 =head3 createFacet
@@ -103,8 +103,11 @@ sub createFacet {
     croak sprintf("!ERROR! createFacet(t1,t2,t3): requires 3 Vertices; you supplied %d", scalar @_)
         unless 3==@_;
     foreach my $v ( @_ ) {
-        croak sprintf("!ERROR! createFacet(t1,t2,t3): each Vertex must be an array ref; you supplied \"%s\"", ref $v ? ref($v)."REF" : defined $v ? $v : '<undef>')
-            unless 'ARRAY' eq ref $v;
+        croak sprintf("!ERROR! createFacet(t1,t2,t3): each Vertex must be an array ref or equivalent object; you supplied a scalar\"%s\"", $v//'<undef>')
+            unless ref $v;
+
+        croak sprintf("!ERROR! createFacet(t1,t2,t3): each Vertex must be an array ref or equivalent object; you supplied \"%s\"", ref $v)
+            unless $v->isa('ARRAY');
 
         croak sprintf("!ERROR! createFacet(t1,t2,t3): each Vertex requires 3 coordinates; you supplied %d: <%s>", scalar @$v, join(",", @$v))
             unless 3==@$v;
@@ -166,8 +169,11 @@ sub createMesh {
             unless 3==@$tri;
 
         foreach my $v ( @$tri ) {
-            croak sprintf("!ERROR! createMesh(...): each Vertex must be an array ref; you supplied \"%s\"", ref $v ? ref($v)."REF" : defined $v ? $v : '<undef>')
-                unless 'ARRAY' eq ref $v;
+            croak sprintf("!ERROR! createMesh(...): each Vertex must be an array ref or equivalent object; you supplied a scalar\"%s\"", $v//'<undef>')
+                unless ref $v;
+
+            croak sprintf("!ERROR! createMesh(...): each Vertex must be an array ref or equivalent object; you supplied \"%s\"", ref $v)
+                unless $v->isa('ARRAY');
 
             croak sprintf("!ERROR! createMesh(...): each Vertex in each triangle requires 3 coordinates; you supplied %d: <%s>", scalar @$v, join(",", @$v))
                 unless 3==@$v;
