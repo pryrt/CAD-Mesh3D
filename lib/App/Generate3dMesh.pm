@@ -2,7 +2,9 @@ package App::Generate3dMesh;
 use warnings;
 use strict;
 use Carp;
-our $VERSION = 0.001_002;
+use 5.010;  # M::V::R requires 5.010, so might as well make use of the defined-or // notation :-)
+use Math::Vector::Real 0.18;
+our $VERSION = 0.001_003;
 
 =head1 NAME
 
@@ -37,7 +39,7 @@ floating-point values to represent the position in 3D space.
 # Exports
 ################################################################
 
-use Exporter 'import';
+use Exporter 5.57 'import';     # v5.57 needed for getting import() without @ISA
 our @EXPORT_CREATE  = qw(createVertex createFacet createQuadrangleFacets createMesh);
 our @EXPORT_VERTEX  = qw(createVertex getx gety getz);
 our @EXPORT_MATH    = qw(unitDelta unitCross facetNormal);
@@ -80,7 +82,7 @@ to represent the x, y, and z coordinates in 3D space.
 sub createVertex {
     croak sprintf("!ERROR! createVertex(x,y,z): requires 3 coordinates; you supplied %d", scalar @_)
         unless 3==@_;
-    return \@_;
+    return [@_];
 }
 
 =head3 createFacet

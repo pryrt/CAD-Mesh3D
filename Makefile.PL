@@ -1,5 +1,5 @@
 use ExtUtils::MakeMaker;
-use 5.008;
+use 5.010;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 %mm_args = (
@@ -8,10 +8,11 @@ use 5.008;
     'VERSION_FROM'  => 'lib/App/Generate3dMesh.pm',
     'ABSTRACT_FROM' => 'lib/App/Generate3dMesh.pm',
     'PREREQ_PM'     => {
-        'Exporter'      => 5.57,    # needed for `use Exporter qw(import);` notation
-        'warnings'      => 0,
-        'strict'        => 0,
-        'Carp'          => 0,
+        'Math::Vector::Real'    => 0.18,
+        'Exporter'              => 5.57,    # needed for `use Exporter qw(import);` notation
+        'warnings'              => 0,
+        'strict'                => 0,
+        'Carp'                  => 0,
     },
 );
 
@@ -35,9 +36,6 @@ use 5.008;
                 },
             },
             keywords => [ '3D', 'CAD', 'STL'],
-            # don't use 'provides', because it's an extra step to maintain, and
-            # can cause problems (getting a mismatch between the $VERSION string and the
-            # provides->{version} will really make it hard to release a next version into CPAN
         },
         # automatically determine the versions for 'provides'; MM->parse_version exists as of MM v6.31, so not a problem with >= 6.46
         #   => this comes out right when printed... but MYMETA.* shows values that look wrong
@@ -52,7 +50,7 @@ use 5.008;
         $mm_args{LICENSE} = 'perl_5';
     }
     if( $ExtUtils::MakeMaker::VERSION >= '6.48' ) {
-        $mm_args{MIN_PERL_VERSION} = '5.8.0';
+        $mm_args{MIN_PERL_VERSION} = '5.10.0';
     }
     if( $ExtUtils::MakeMaker::VERSION >= '6.52' ) {
         $mm_args{CONFIGURE_REQUIRES} = {
