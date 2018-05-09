@@ -93,6 +93,12 @@ windebug ::
 realclean ::
 	$(NOECHO) ( $(TEST_D) cover_db && $(RM_RF) cover_db ) || $(ECHO) realclean:: skip "rm -rf cover_db"
 
+# auto-generate the README from the lib/App/Generate3dMesh.pm
+README.md :: lib/App/Generate3dMesh.pm
+	podselect -section "NAME|SYNOPSIS|DESCRIPTION|AUTHOR|COPYRIGHT|LICENSE" lib/App/Generate3dMesh.pm > README.pod
+	pod2markdown README.pod README.md
+	$(RM_F) README.pod
+
 POSTAMBLE
 }
 
