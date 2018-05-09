@@ -94,15 +94,15 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
 {
     my $tdir;
     for my $try ( $ENV{TEMP}, $ENV{TMP}, '/tmp', '.' ) {
-        diag "before: ", $try;
+        # diag "before: ", $try;
         $try =~ s{\\}{/}gx if index($try, '\\')>-1 ;        # without the if-index, died with modification of read-only value on /tmp or .
-        diag "after:  ", $try;
+        # diag "after:  ", $try;
         next unless -d $try;
         next unless -w _;
         $tdir = $try;
         last;
     }
-    diag "final: '", $tdir // '<undef>', "'";
+    # diag "final: '", $tdir // '<undef>', "'";
     die "could not find a writeable directory" unless defined $tdir && -d $tdir && -w $tdir;
 
     my $f1 = $tdir.'/filename';
