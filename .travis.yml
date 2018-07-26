@@ -2,12 +2,12 @@ language: perl
 
 matrix:
   include:
-    - perl: "5.28"
+    - perl: "5.26"
       env: COVERAGE=1       # only report coverage to coveralls for this version of perl
 
 perl:
-    #- "5.28" # explicit for coverage test
-    #- "5.26"
+    #- "5.28"
+    #- "5.26" # explicit for coverage test
     #- "5.24"
     #- "5.22"
     #- "5.20"
@@ -16,7 +16,7 @@ perl:
     #- "5.14"
     #- "5.12"
     #- "5.10"
-    - "5.8"
+    #- "5.8"
 
 os:
     - linux
@@ -28,7 +28,6 @@ notifications:
 before_install:
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init
-  - set
   - build-perl
   - perl -V
   - build-dist
