@@ -378,6 +378,65 @@ sub outputStl {
     close($fh) if $doClose;
 }
 
+=head1 SEE ALSO
+
+=over
+
+=item * L<CAD::Format::STL> - includes both input and output from STL (ASCII and BINARY)
+
+The unaddressed Windows bug was killer for me.  I possibly would have offered
+to co-maintain and implement the bug fix, but I also wanted the possibility
+of adding sub-modules to implment other input/output formats -- in which case, the naming
+scheme is wrong.
+
+=back
+
+=head1 TODO
+
+=over
+
+=item * Input from STL
+
+=item * Move C<outputStl()> to a separate module (for easy plug-and-play)
+
+=item * Plug-and-Play
+
+=over
+
+=item * enableFormat( I<Format> )
+
+=item * enableFormat( I<Format> =E<gt> I<module>, I<inputFunc>, I<outputFunc> )
+
+Require/import the sub-module.  Maybe also callable via the C<use CAD::Mesh3D qw/Format1 Format2/>.
+
+    enableFormat( 'STL' );  # assumes CAD::Mesh3D::STL, inputStl() and outputStl()
+    enableFormat( 'PNG' => 'CAD::Mesh3D::Images', 'pngInput', 'pngOutput'); # explicit about module name and function names
+
+I<Module> should be the name of the module.  It should default to
+'CAD::Mesh3D::I<Format>'.
+
+I<inputFunc> should either be the name (relative to the given module) or a
+coderef of an appropriate function.  You can use C<\&inputFunctionNotAvail>
+to give an error message if someone tries to use an invalid
+
+=item * input( I<format>, I<file>, [I<options>])
+
+Inputs the mesh file given that format.
+
+Not all will have an input function (for example, cannot import a mesh from an image)
+
+=item * output( I<format>, I<file>, [I<options>])
+
+Output the mesh to the appropriate format.
+
+=item * \&inputFunctionNotAvail
+
+Pass this to the C<enableFormat()</c> function
+
+=back
+
+=back
+
 =head1 AUTHOR
 
 Peter C. Jones C<E<lt>petercj AT cpan DOT orgE<gt>>
@@ -387,6 +446,7 @@ Peter C. Jones C<E<lt>petercj AT cpan DOT orgE<gt>>
 <a href="https://github.com/pryrt/App-Generate3dMesh/issues"><img src="https://img.shields.io/github/issues/pryrt/App-Generate3dMesh.svg" alt="issues" title="issues"></a>
 <a href="https://ci.appveyor.com/project/pryrt/App-Generate3dMesh"><img src="https://ci.appveyor.com/api/projects/status/r4o672g0ua4dvt11?svg=true" alt="appveyor build status" title="appveyor build status"></a>
 <a href="https://travis-ci.org/pryrt/App-Generate3dMesh"><img src="https://travis-ci.org/pryrt/App-Generate3dMesh.svg?branch=master" alt="travis build status" title="travis build status"></a>
+<a href='https://coveralls.io/github/pryrt/App-Generate3dMesh?branch=master'><img src='https://coveralls.io/repos/github/pryrt/App-Generate3dMesh/badge.svg?branch=master' alt='Coverage Status' title='Coverage Status' /></a>
 
 =end html
 

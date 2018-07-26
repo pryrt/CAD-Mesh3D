@@ -102,7 +102,7 @@ realclean ::
 
 # auto-generate the README from the lib/App/Generate3dMesh.pm
 README.md :: lib/App/Generate3dMesh.pm
-	podselect -section "NAME|SYNOPSIS|DESCRIPTION|AUTHOR|COPYRIGHT|LICENSE" lib/App/Generate3dMesh.pm > README.pod
+	podselect -section "NAME|SYNOPSIS|DESCRIPTION|SEE ALSO|TODO|AUTHOR|COPYRIGHT|LICENSE" lib/App/Generate3dMesh.pm > README.pod
 	pod2markdown README.pod README.md
 	$(RM_F) README.pod
 
