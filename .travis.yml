@@ -21,10 +21,6 @@ perl:
 os:
     - linux
 
-env:
-    - MM_SIGN_DIST=0
-    - TEST_SIGNATURE=0
-
 notifications:
     on_success: change
     on_failure: change
@@ -34,6 +30,9 @@ before_install:
   - source ~/travis-perl-helpers/init
   - build-perl
   - perl -V
+  - # cpanm --notest Module::Signature
+  - export MM_SIGN_DIST=
+  - export TEST_SIGNATURE=
   - build-dist
   - cd $BUILD_DIR             # $BUILD_DIR is set by the build-dist command
 
