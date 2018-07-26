@@ -75,6 +75,30 @@ solid OBJECT
 endsolid OBJECT
 EOA
 
+{
+    my @v = (
+        [0,0,-1], [0,0,0], [5.0e-1, 8.6602540e-1, 0], [1,0,0],
+        [0,-9.4280904e-1,3.3333333e-1], [0,0,0], [1,0,0], [5.0000000e-001,2.8867513e-001,8.1649658e-001],
+        [8.1649658e-001, 4.7140452e-001, 3.3333333e-001], [1.0000000e+000, 0.0000000e+000, 0.0000000e+000], [5.0000000e-001, 8.6602540e-001, 0.0000000e+000], [5.0000000e-001, 2.8867513e-001, 8.1649658e-001],
+        [-8.1649658e-001, 4.7140452e-001, 3.3333333e-001], [5.0000000e-001, 8.6602540e-001, 0.0000000e+000], [0.0000000e+000, 0.0000000e+000, 0.0000000e+000], [5.0000000e-001, 2.8867513e-001, 8.1649658e-001],
+   );
+   my $x = '';
+   $x .= sprintf "solid OBJECT\n";
+   for(1..4) {
+   $x .= sprintf "    facet normal %16.7e %16.7e %16.7e\n", @{ shift @v };
+   $x .= sprintf "        outer loop\n";
+   $x .= sprintf "            vertex %16.7e %16.7e %16.7e\n", @{ shift @v } for 1 .. 3;
+   $x .= sprintf "        endloop\n";
+   $x .= sprintf "    endfacet\n";
+   }
+   $x .= sprintf "endsolid OBJECT\n";
+   #diag $x;
+   #chomp $x;
+   #chomp(my $exp = $expected_ascii);
+   #is( $x, $exp, 'debug');
+   $expected_ascii = $x;
+}
+
 foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     my $memory = '';
     open my $fh, '>', \$memory or die "in-memory handle failed: $!";
