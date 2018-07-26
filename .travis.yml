@@ -1,14 +1,9 @@
 language: perl
 
-matrix:
-  include:
-    - perl: "5.26"
-      env: COVERAGE=1       # only report coverage to coveralls for this version of perl
-
 perl:
     #- "5.28"
     #- "5.26" # explicit for coverage test
-    #- "5.24"
+    - "5.24"
     #- "5.22"
     #- "5.20"
     #- "5.18"
@@ -48,3 +43,8 @@ script:
 after_success:
   - cover -report coveralls
   - coverage-report
+
+matrix:
+  include:
+    - perl: "5.26"
+      env: COVERAGE=1       # only report coverage to coveralls for this version of perl
