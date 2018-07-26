@@ -1,0 +1,50 @@
+environment:
+  matrix:
+    # each 'perl' is one of the version numbers from https://chocolatey.org/packages/StrawberryPerl
+    #   note that some refuse to install on appveyor's system: 5.12.3.0, 5.12.3.1, 5.16.3.1
+    #   the oldest that I can get to work is 5.14
+    - perl: default
+    - perl: 5.26.2.1
+    - perl: 5.24.4.1
+    - perl: 5.22.3.1
+    - perl: 5.20.3.3
+    - perl: 5.18.4.1
+    - perl: 5.16.3.20170202
+    - perl: 5.14.4.1
+
+skip_tags: true
+
+cache:
+  #- C:\strawberry   -> appveyor.yml
+  # it will try to only reset the cache when appveyor changes
+  #   note: there is only 1GB _total_ cache for each strawberry version is about 0.3GB,
+  #   so it would fill my cache (and failing builds?) after a total of 3 strawberries
+  #   were cached across all my appveyor projects
+
+install:
+  - IF NOT DEFINED perl set perl=default
+  - echo install Perl v%perl%...
+  - IF NOT EXIST "C:\strawberry" (IF /I %perl%==default (cinst strawberryperl) ELSE (cinst strawberryperl --version %perl%) )
+  - IF NOT EXIST "chocologs" MKDIR chocologs
+  - IF EXIST "c:\ProgramData\chocolatey\logs" COPY /Y "c:\ProgramData\chocolatey\logs" "chocologs"
+  - set PATH=C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
+  - cpanm --installdeps .
+  - cpanm --notest Devel::Cover
+
+build_script:
+  - echo build using strawberry perl v%perl%...
+  - perl -le "print qq(build with perl v$])"
+  ## make: but don't want to have to know whether strawberry is using dmake, gmake, or futuremake
+  - if exist "Makefile.PL" (perl Makefile.PL)
+  - if exist "Makefile"    (perl -MConfig -le "system $Config{make}")
+
+test_script:
+  - echo test using strawberry perl v%perl%...
+  - perl -le "print qq(test with perl v$])"
+  ## make test: but don't want to have to know whether strawberry is using dmake, gmake, or futuremake
+  - if exist "Makefile" (perl -MConfig -le "system $Config{make}, 'test'") ELSE (prove -l t)
+  - if exist "Makefile" (perl -MConfig -le "system $Config{make}, 'testcover'")
+
+artifacts:
+  - path: cover_db
+  - path: chocologs
