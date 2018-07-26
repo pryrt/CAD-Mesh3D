@@ -431,7 +431,7 @@ Output the mesh to the appropriate format.
 
 =item * \&inputFunctionNotAvail
 
-Pass this to the C<enableFormat()</c> function
+Pass this to the C<enableFormat()> function
 
 =back
 

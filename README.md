@@ -23,6 +23,49 @@ into locally-flat pieces known as **Facet**s.  Each Facet is a triangle made fro
 **Vertex**es or vertices.  Each Vertex is made up of three x, y, and z **coordinate**s, which are just
 floating-point values to represent the position in 3D space.
 
+# SEE ALSO
+
+- [CAD::Format::STL](https://metacpan.org/pod/CAD::Format::STL) - includes both input and output from STL (ASCII and BINARY)
+
+    The unaddressed Windows bug was killer for me.  I possibly would have offered
+    to co-maintain and implement the bug fix, but I also wanted the possibility
+    of adding sub-modules to implment other input/output formats -- in which case, the naming
+    scheme is wrong.
+
+# TODO
+
+- Input from STL
+- Move `outputStl()` to a separate module (for easy plug-and-play)
+- Plug-and-Play
+    - enableFormat( _Format_ )
+    - enableFormat( _Format_ => _module_, _inputFunc_, _outputFunc_ )
+
+        Require/import the sub-module.  Maybe also callable via the `use CAD::Mesh3D qw/Format1 Format2/`.
+
+            enableFormat( 'STL' );  # assumes CAD::Mesh3D::STL, inputStl() and outputStl()
+            enableFormat( 'PNG' => 'CAD::Mesh3D::Images', 'pngInput', 'pngOutput'); # explicit about module name and function names
+
+        _Module_ should be the name of the module.  It should default to
+        'CAD::Mesh3D::_Format_'.
+
+        _inputFunc_ should either be the name (relative to the given module) or a
+        coderef of an appropriate function.  You can use `\&inputFunctionNotAvail`
+        to give an error message if someone tries to use an invalid
+
+    - input( _format_, _file_, \[_options_\])
+
+        Inputs the mesh file given that format.
+
+        Not all will have an input function (for example, cannot import a mesh from an image)
+
+    - output( _format_, _file_, \[_options_\])
+
+        Output the mesh to the appropriate format.
+
+    - \\&inputFunctionNotAvail
+
+        Pass this to the `enableFormat()` function
+
 # AUTHOR
 
 Peter C. Jones `<petercj AT cpan DOT org>`
