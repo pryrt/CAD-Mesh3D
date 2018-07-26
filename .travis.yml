@@ -1,17 +1,17 @@
 language: perl
 
 perl:
-    #- "5.28"
-    #- "5.26" # explicit for coverage test
+    #- "5.28" # explicit for coverage test
+    - "5.26"
     - "5.24"
-    #- "5.22"
-    #- "5.20"
-    #- "5.18"
-    #- "5.16"
-    #- "5.14"
-    #- "5.12"
-    #- "5.10"
-    - "5.8"
+    - "5.22"
+    - "5.20"
+    - "5.18"
+    - "5.16"
+    - "5.14"
+    - "5.12"
+    - "5.10"
+    #- "5.08" # library requires 5.010 (// and Math::Vector::Real both need v >= 5.10)
 
 os:
     - linux
@@ -46,5 +46,5 @@ after_success:
 
 matrix:
   include:
-    - perl: "5.26"
+    - perl: "5.28"
       env: COVERAGE=1       # only report coverage to coveralls for this version of perl
