@@ -72,7 +72,7 @@ use 5.010;
         };
     }
     if( $ExtUtils::MakeMaker::VERSION >= '6.18' ) {
-        $mm_args{SIGN} = 1 if MM->can('signature_target');
+        $mm_args{SIGN} = 1 if MM->can('signature_target') && $ENV{MM_SIGN_DIST};
     }
 }
 
@@ -87,15 +87,32 @@ testcover :: lib/App/Generate3dMesh.pm
 windebug ::
 	$(NOECHO) for %f in ( t\*.t ) do $(NOECHO) (echo %f & perl %f & echo ----------)
 
+# run author-tests on the original
+authtest ::
+	$(TEST_D) xt && $(MAKE) test TEST_FILES='xt/*.t'
+
+# run author-tests on the distribution
+distauthtest :: disttest
+	cd $(DISTVNAME) && $(TEST_D) xt && $(MAKE) test TEST_FILES='xt/*.t'
+
 #coverclean :: realclean
 realclean ::
 	$(NOECHO) ( $(TEST_D) cover_db && $(RM_RF) cover_db ) || $(ECHO) realclean:: skip "rm -rf cover_db"
+	$(NOECHO) ( $(TEST_F) MYMETA.json.lock && $(RM_RF) MYMETA.json.lock ) || $(ECHO) realclean:: skip "rm -rf MYMETA.json.lock"
 
 # auto-generate the README from the lib/App/Generate3dMesh.pm
 README.md :: lib/App/Generate3dMesh.pm
 	podselect -section "NAME|SYNOPSIS|DESCRIPTION|AUTHOR|COPYRIGHT|LICENSE" lib/App/Generate3dMesh.pm > README.pod
 	pod2markdown README.pod README.md
 	$(RM_F) README.pod
+
+# auto-generate the LICENSE file from the lib/Math/PRBS.pm
+LICENSE :: lib/App/Generate3dMesh.pm
+	podselect -section "AUTHOR|COPYRIGHT|LICENSE" lib/App/Generate3dMesh.pm > LICENSE.pod
+	pod2text LICENSE.pod LICENSE
+	$(RM_F) LICENSE.pod
+
+docs :: README.md LICENSE
 
 POSTAMBLE
 }

@@ -382,11 +382,19 @@ sub outputStl {
 
 Peter C. Jones C<E<lt>petercj AT cpan DOT orgE<gt>>
 
+=begin html
+
+<a href="https://github.com/pryrt/App-Generate3dMesh/issues"><img src="https://img.shields.io/github/issues/pryrt/App-Generate3dMesh.svg" alt="issues" title="issues"></a>
+<a href="https://ci.appveyor.com/project/pryrt/App-Generate3dMesh"><img src="https://ci.appveyor.com/api/projects/status/r4o672g0ua4dvt11?svg=true" alt="appveyor build status" title="appveyor build status"></a>
+<a href="https://travis-ci.org/pryrt/App-Generate3dMesh"><img src="https://travis-ci.org/pryrt/App-Generate3dMesh.svg?branch=master" alt="travis build status" title="travis build status"></a>
+
+=end html
+
 =head1 COPYRIGHT
 
-Copyright (C) 2017 Peter C. Jones
+Copyright (C) 2017,2018 Peter C. Jones
 
-=head1 LICENCE
+=head1 LICENSE
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
