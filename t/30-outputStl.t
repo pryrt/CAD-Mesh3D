@@ -42,48 +42,17 @@ my $expected_ubin = "00000000000000000000000000000000000000000000000000000000000
     #               "null header....................................................................................................................................................'########n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'"
     # if the bigendian pack fails, it will be
     #               "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000bf8000000000000000000000000000003f0000003f5db3d7000000003f8000000000000000000000000000000000bf715bef3eaaaaab0000000000000000000000003f80000000000000000000003f0000003e93cd3a3f5105ec00003f5105ec3ef15bef3eaaaaab3f80000000000000000000003f0000003f5db3d7000000003f0000003e93cd3a3f5105ec0000bf5105ec3ef15bef3eaaaaab3f0000003f5db3d7000000000000000000000000000000003f0000003e93cd3a3f5105ec0000"
-my $expected_ascii =<<EOA;
-solid OBJECT
-    facet normal   0.0000000e+000   0.0000000e+000  -1.0000000e+000
-        outer loop
-            vertex   0.0000000e+000   0.0000000e+000   0.0000000e+000
-            vertex   5.0000000e-001   8.6602540e-001   0.0000000e+000
-            vertex   1.0000000e+000   0.0000000e+000   0.0000000e+000
-        endloop
-    endfacet
-    facet normal   0.0000000e+000  -9.4280904e-001   3.3333333e-001
-        outer loop
-            vertex   0.0000000e+000   0.0000000e+000   0.0000000e+000
-            vertex   1.0000000e+000   0.0000000e+000   0.0000000e+000
-            vertex   5.0000000e-001   2.8867513e-001   8.1649658e-001
-        endloop
-    endfacet
-    facet normal   8.1649658e-001   4.7140452e-001   3.3333333e-001
-        outer loop
-            vertex   1.0000000e+000   0.0000000e+000   0.0000000e+000
-            vertex   5.0000000e-001   8.6602540e-001   0.0000000e+000
-            vertex   5.0000000e-001   2.8867513e-001   8.1649658e-001
-        endloop
-    endfacet
-    facet normal  -8.1649658e-001   4.7140452e-001   3.3333333e-001
-        outer loop
-            vertex   5.0000000e-001   8.6602540e-001   0.0000000e+000
-            vertex   0.0000000e+000   0.0000000e+000   0.0000000e+000
-            vertex   5.0000000e-001   2.8867513e-001   8.1649658e-001
-        endloop
-    endfacet
-endsolid OBJECT
-EOA
-
-{
+my $expected_ascii = do {
+    # automatically generate it: when I hardcoded the ascii, then there are discrepancies between
+    #   machines where "%16.7e" will give "...e+000" and "...e+00"; by generating using
+    #   the same sprintf that's used in the library for that run, you eliminate that discrepancy
     my @v = (
         [0,0,-1], [0,0,0], [5.0e-1, 8.6602540e-1, 0], [1,0,0],
         [0,-9.4280904e-1,3.3333333e-1], [0,0,0], [1,0,0], [5.0000000e-001,2.8867513e-001,8.1649658e-001],
         [8.1649658e-001, 4.7140452e-001, 3.3333333e-001], [1.0000000e+000, 0.0000000e+000, 0.0000000e+000], [5.0000000e-001, 8.6602540e-001, 0.0000000e+000], [5.0000000e-001, 2.8867513e-001, 8.1649658e-001],
         [-8.1649658e-001, 4.7140452e-001, 3.3333333e-001], [5.0000000e-001, 8.6602540e-001, 0.0000000e+000], [0.0000000e+000, 0.0000000e+000, 0.0000000e+000], [5.0000000e-001, 2.8867513e-001, 8.1649658e-001],
    );
-   my $x = '';
-   $x .= sprintf "solid OBJECT\n";
+   my $x .= sprintf "solid OBJECT\n";
    for(1..4) {
    $x .= sprintf "    facet normal %16.7e %16.7e %16.7e\n", @{ shift @v };
    $x .= sprintf "        outer loop\n";
@@ -92,12 +61,7 @@ EOA
    $x .= sprintf "    endfacet\n";
    }
    $x .= sprintf "endsolid OBJECT\n";
-   #diag $x;
-   #chomp $x;
-   #chomp(my $exp = $expected_ascii);
-   #is( $x, $exp, 'debug');
-   $expected_ascii = $x;
-}
+};
 
 foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     my $memory = '';
@@ -118,6 +82,7 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
 {
     my $tdir;
     for my $try ( $ENV{TEMP}, $ENV{TMP}, '/tmp', '.' ) {
+        next unless defined $try;
         # diag "before: ", $try;
         $try =~ s{\\}{/}gx if index($try, '\\')>-1 ;        # without the if-index, died with modification of read-only value on /tmp or .
         # diag "after:  ", $try;
