@@ -36,6 +36,9 @@ floating-point values to represent the position in 3D space.
 
 - Input from STL
 - Move `outputStl()` to a separate module (for easy plug-and-play)
+
+    ⇒ 2018-Sep-12: realized that once it's pluggable in a separate module, the windows-bug is the only reason to not use [CAD::Format::STL](https://metacpan.org/pod/CAD::Format::STL) for the backend (I've patched my copy, and will be attempting contact with the maintainer).  This would also apply to "Input from STL"
+
 - Plug-and-Play
     - enableFormat( _Format_ )
     - enableFormat( _Format_ => _module_, _inputFunc_, _outputFunc_ )

@@ -399,6 +399,8 @@ scheme is wrong.
 
 =item * Move C<outputStl()> to a separate module (for easy plug-and-play)
 
+E<rArr> 2018-Sep-12: realized that once it's pluggable in a separate module, the windows-bug is the only reason to not use L<CAD::Format::STL> for the backend (I've patched my copy, and will be attempting contact with the maintainer).  This would also apply to "Input from STL"
+
 =item * Plug-and-Play
 
 =over
