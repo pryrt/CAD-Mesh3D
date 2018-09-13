@@ -41,4 +41,6 @@ my $part = $stl->add_part("name", @$mesh);
 $stl->save(binary => 'altbin.stl');
 $stl->save(ascii => 'altasc.stl');
 
+ok(1);
+
 done_testing();
