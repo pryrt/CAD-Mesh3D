@@ -37,7 +37,7 @@ is(scalar($part->facets), 1, 'one triangles');
 # write binary STL to an in-memory file (ie, string reference)
 {
   my $string;
-  open(my $ofh, '>', \$string) or die "could not open in-memory file";
+  open(my $ofh, '>:raw', \$string) or die "could not open in-memory file";
   $stl->save(binary => $ofh);
   ok($string, 'wrote to binary filehandle');
   #diag $string;
