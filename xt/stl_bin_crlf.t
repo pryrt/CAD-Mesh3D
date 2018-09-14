@@ -41,11 +41,12 @@ is(scalar($part->facets), 1, 'one triangles');
   $stl->save(binary => $ofh);
   ok($string, 'wrote to binary filehandle');
   #diag $string;
-  #diag map { sprintf '%02X ', ord $_} split //, $string;
-  is index($string, qq/\x00\x0D\x81\x3F/), 108, 'includes little-endian 0x3F810D00 at right file offset';
-  is index($string, qq/\x00\x0A\x82\x3F/), 112, 'includes little-endian 0x3F820A00 at right file offset';
-  is index($string, qq/\x0A\x0D\x83\x3F/), 120, 'includes little-endian 0x3F830D0A at right file offset';
-  is index($string, qq/\x0D\x0A\x84\x3F/), 124, 'includes little-endian 0x3F840A0D at right file offset';
+  my $fail;
+  is index($string, qq/\x00\x0D\x81\x3F/), 108, 'includes little-endian 0x3F810D00 at right file offset' or ++$fail;
+  is index($string, qq/\x00\x0A\x82\x3F/), 112, 'includes little-endian 0x3F820A00 at right file offset' or ++$fail;
+  is index($string, qq/\x0A\x0D\x83\x3F/), 120, 'includes little-endian 0x3F830D0A at right file offset' or ++$fail;
+  is index($string, qq/\x0D\x0A\x84\x3F/), 124, 'includes little-endian 0x3F840A0D at right file offset' or ++$fail;
+  diag map { sprintf '%02X ', ord $_} split //, $string     if $fail;
 }
 
 done_testing();
