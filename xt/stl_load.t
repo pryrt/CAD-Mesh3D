@@ -5,7 +5,7 @@ use warnings;
 use strict;
 use 5.010;      # for //
 
-use Test::More 'no_plan';
+use Test::More;
 
 use CAD::Format::STL;
 

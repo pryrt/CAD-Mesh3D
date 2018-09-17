@@ -13,6 +13,7 @@ use 5.010;
         'warnings'              => 0,
         'strict'                => 0,
         'Carp'                  => 0,
+        'CAD::Format::STL'      => 0,
     },
 );
 
