@@ -68,16 +68,39 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     open my $fh, '>', \$memory or die "in-memory handle failed: $!";
     outputStl($mesh, $fh, $asc);
     my $expected;
-    if(0 != ord $memory) {  # ascii
+    my $is_ascii = 0;
+    while(1) {
+        my $nmesh = @$mesh;
+warn nmesh => "\t" => $nmesh;
+        my $count = unpack 'L<', substr($memory, 80, 4);
+warn count => "\t" => $count;
+        $is_ascii++, last   unless $nmesh == $count;
+        my $exp_size =
+            + 80 # eighty header bytes
+            +  4 # four bytes for the length
+            + $count * (
+                + 4 # normal and three point vectors
+                * 3 # three values per vector
+                * 4 # four bytes per value
+                + 2 # the trailing short (aka 'attribute byte count')
+            );
+warn exp_size => "\t" => $exp_size;
+        my $got_size = length($memory);
+warn got_size => "\t" => $got_size;
+        $is_ascii++, last   unless $exp_size == $got_size;
+        last;
+    }
+    if($is_ascii) {       # ascii
         chomp $memory;
         chomp($expected = $expected_ascii);
     } else {                # binary (need to unpack to a string)
         $expected = $expected_ubin;
         $memory = unpack 'H*', $memory;
     }
-    #note sprintf "MEMORY[%8.8s] = '%s'\n", defined $asc ? $asc : '<undef>', $memory;
+    note sprintf "MEMORY[%8.8s] = '%s'\n", defined $asc ? $asc : '<undef>', $memory;
     is( $memory, $expected, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>');
     close($fh);
+die "\n";
 }
 {
     my $tdir;

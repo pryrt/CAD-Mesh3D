@@ -4,6 +4,7 @@ use strict;
 use Carp;
 use 5.010;  # M::V::R requires 5.010, so might as well make use of the defined-or // notation :-)
 use Math::Vector::Real 0.18;
+use CAD::Format::STL qw//;
 our $VERSION = 0.001_003;
 
 =head1 NAME
@@ -334,7 +335,26 @@ sub outputStl {
         croak sprintf('!ERROR! outputStl(): unknown asc/bin switch "%s"', $_) if $_ && /\D/;
     }   # /check_asc
     binmode $fh unless $asc;
+warn "asc = ", ($asc // '<undef>'), "\n";
+    #############################################################################################
+    # Try using CAD::Format::STL...
+    #############################################################################################
+    if(1) { #
+        my $stl = CAD::Format::STL->new;
+        my $part = $stl->add_part("my part", @$mesh);
+use Data::Dumper; warn Dumper $stl;
+        if($asc) {
+            $stl->save( ascii => $fh );
+        } else {
+            $stl->save( binary => $fh );
+        }
 
+        close($fh) if $doClose;
+        return;
+    }
+    #############################################################################################
+    # old:
+    #############################################################################################
     # actually output things...
     # printf STDERR "DEBUG  outputStl(%s) | %s %s # %f\n", join(',', $mesh, "${fn}:${fh}", $asc), $fh, scalar localtime, rand 100;
     if($asc) {
