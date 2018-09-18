@@ -23,10 +23,14 @@ EOH
 note "\n";
 note "Floats with 0x0D (CR), 0x0A (LF), or both (CRLF) embedded in the bigendian representation";
 sub hex2float { unpack 'f>' => pack 'H*' => shift }
-note sprintf '    %-4s => %.16f', 'CR',   my $fcr   = hex2float('3F810D00');
-note sprintf '    %-4s => %.16f', 'LF',   my $flf   = hex2float('3F820A00');
-note sprintf '    %-4s => %.16f', 'CRLF', my $fcrlf = hex2float('3F830D0A');
-note sprintf '    %-4s => %.16f', 'LFCR', my $flfcr = hex2float('3F840A0D');
+note sprintf '    %-4s => %.16f', 'CR',
+my $fcr   = hex2float('3F810D00');
+note sprintf '    %-4s => %.16f', 'LF',
+my $flf   = hex2float('3F820A00');
+note sprintf '    %-4s => %.16f', 'CRLF',
+my $fcrlf = hex2float('3F830D0A');
+note sprintf '    %-4s => %.16f', 'LFCR',
+my $flfcr = hex2float('3F840A0D');
 note "\n";
 
 {
@@ -75,8 +79,19 @@ die "could not find a writeable directory" unless defined $tdir && -d $tdir && -
   is index($string, qq/\x0A\x0D\x83\x3F/), 120, 'includes little-endian 0x3F830D0A at right file offset' or ++$fail_write;
   is index($string, qq/\x0D\x0A\x84\x3F/), 124, 'includes little-endian 0x3F840A0D at right file offset' or ++$fail_write;
   diag map { sprintf '%02X ', ord $_} split //, $string if $fail_write;
+  unlink $file if -e $file;
 
   # read binary STL to a temporary file (ie, require file system access, to trigger the bug)
+  # actually, start with writing a known-good copy of the file using binmode, so that it will
+  # correctly fail even if the _write fails (rather than having the two errors cancel)
+  $string = "\x63\x75\x62\x65\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x3F\x00\x0D\x81\x3F\x00\x0A\x82\x3F\x00\x00\x00\x40\x0A\x0D\x83\x3F\x0D\x0A\x84\x3F\x00\x00\x40\x40\x00\x00";
+  {
+    open my $fh, '>:raw', $file or diag "could not open '$file': $!";
+    print {$fh} $string;
+    close $fh;
+    is(-s $file, 134, 'create known-good test input file');
+  };
+
   $stl = CAD::Format::STL->new();   # need a new object.
   $stl->load(binary => $file);
   my $expect = [[0,0,0], @$expected_points];    # normal, tri1, tri2, tri3
