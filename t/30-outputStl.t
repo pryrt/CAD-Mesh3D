@@ -1,4 +1,4 @@
-use 5.008;      # required for in-memory files
+use 5.010;      # v5.8 equired for in-memory files; v5.10 required for named backreferences
 use strict;
 use warnings;
 use Test::More tests => 13;
@@ -43,6 +43,7 @@ my $expected_ubin = qr".........................................................
     # if the bigendian pack fails, it will be
     #                 "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000bf8000000000000000000000000000003f0000003f5db3d7000000003f8000000000000000000000000000000000bf715bef3eaaaaab0000000000000000000000003f80000000000000000000003f0000003e93cd3a3f5105ec00003f5105ec3ef15bef3eaaaaab3f80000000000000000000003f0000003f5db3d7000000003f0000003e93cd3a3f5105ec0000bf5105ec3ef15bef3eaaaaab3f0000003f5db3d7000000000000000000000000000000003f0000003e93cd3a3f5105ec0000"
     # 2018-Sep-18: converted to regular expression, where the header and normal vectors can be anything (required, since I've lost control over those when I switched to using CAD::Format::STL)
+my $flattened;
 my $expected_ascii = do {
     # automatically generate it: when I hardcoded the ascii, then there are discrepancies between
     #   machines where "%16.7e" will give "...e+000" and "...e+00"; by generating using
@@ -52,18 +53,72 @@ my $expected_ascii = do {
         [0,-9.4280904e-1,3.3333333e-1], [0,0,0], [1,0,0], [5.0000000e-001,2.8867513e-001,8.1649658e-001],
         [8.1649658e-001, 4.7140452e-001, 3.3333333e-001], [1.0000000e+000, 0.0000000e+000, 0.0000000e+000], [5.0000000e-001, 8.6602540e-001, 0.0000000e+000], [5.0000000e-001, 2.8867513e-001, 8.1649658e-001],
         [-8.1649658e-001, 4.7140452e-001, 3.3333333e-001], [5.0000000e-001, 8.6602540e-001, 0.0000000e+000], [0.0000000e+000, 0.0000000e+000, 0.0000000e+000], [5.0000000e-001, 2.8867513e-001, 8.1649658e-001],
-   );
-   my $x .= sprintf "solid OBJECT\n";
-   for(1..4) {
-   $x .= sprintf "    facet normal %16.7e %16.7e %16.7e\n", @{ shift @v };
-   $x .= sprintf "        outer loop\n";
-   $x .= sprintf "            vertex %16.7e %16.7e %16.7e\n", @{ shift @v } for 1 .. 3;
-   $x .= sprintf "        endloop\n";
-   $x .= sprintf "    endfacet\n";
-   }
-   $x .= sprintf "endsolid OBJECT\n";
+    );
+
+    # make a flattened array, rounded, for comparing the final vectors => does not include normals
+    $flattened = [@v];
+    splice @$flattened, $_, 1 for (12,8,4,0);     # the @v, without normal vectors
+    foreach my $i ( 0 .. $#$flattened ) {
+        foreach my $j ( 0 .. 2 ) {
+            $flattened->[$i][$j] = 0 + sprintf '%.8f', $flattened->[$i][$j];
+        }
+    }
+
+    # expected ascii
+    my $x .= sprintf "solid OBJECT\n";
+    for(1..4) {
+        $x .= sprintf "    facet normal %16.7e %16.7e %16.7e\n", @{ shift @v };
+        $x .= sprintf "        outer loop\n";
+        $x .= sprintf "            vertex %16.7e %16.7e %16.7e\n", @{ shift @v } for 1 .. 3;
+        $x .= sprintf "        endloop\n";
+        $x .= sprintf "    endfacet\n";
+    }
+    $x .= sprintf "endsolid OBJECT\n";
 };
 # TODO (2018-Sep-18): need to replace the single $expected_ascii with a function that will wrap it, and parse for individual components of the expected ascii
+sub test_ascii {
+    my($ascii_string,$test_name) = @_;
+    note "\n";
+    note test_ascii => "\t" => $test_name;
+    $ascii_string =~ s/\h+/ /gm;  # normalize horizontal whitespace
+    $ascii_string =~ s/^\s+//gm;  # trim leading whitespace on any line
+    $ascii_string =~ s/\s+$//gm;  # trim trailing whitespace on any line
+    #note "-----\n", $ascii_string, "\n=====\n";
+    $ascii_string =~ m/^solid *(?<name>\V*?)$(?<content>.*)^endsolid *\g{name}*$/ms;
+    my $name = $+{name};
+    note "\t", name => "\t", $name;
+    my $content = $+{content};
+    #note "\t", content => "\t", $content;
+    ok $content, "${test_name}: solid/endsolid has content";
+    my @facets = $content =~ m/^facet *(.*?)\R+^endfacet$/gms;
+    my $n = scalar @facets;
+    is $n, 4, "${test_name}: has 4 facets";
+    my @vectors;
+    foreach my $facet ( @facets ) {
+        #note "facet {\n", $facet, "\n}\n";
+        my @nv = $facet =~ m/normal (\S+) (\S+) (\S+)/gms;
+        note "normal: [@nv]";
+        is scalar(@nv), 3, "${test_name}: facet normal has three coordinates";
+        $facet =~ m/^outer loop$(?<content>.*)^endloop$/ms;
+        $content = $+{content};
+        ok $content, "${test_name}: facet has loop content";
+        #note "\t", loop_content => "\t", $content;
+        my @verts = $facet =~ /^vertex \S+ \S+ \S+$/gms;
+        is scalar(@verts), 3, "${test_name}: facet has three vertexes";
+        foreach my $vstr ( @verts ) {
+            $vstr =~ m/\Avertex (?<x>\S+) (?<y>\S+) (?<z>\S+)\Z/ms;
+            my $pt = [map {0 + sprintf '%.8f', $_} @+{qw/x y z/}];
+            note pt => "\t[@$pt] = $pt";
+            is scalar(@$pt), 3, "${test_name}: vertex has three coordinates";
+            push @vectors, $pt;
+        }
+    }
+    is scalar(@vectors), 12, "${test_name}: found a total of 12 vertices in all the facets";
+    is_deeply \@vectors, $flattened, "${test_name}: vertices ok" or diag explain \@vectors;
+
+    note "\n";
+    die "\n";
+}
 
 foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     my $memory = '';
@@ -93,6 +148,7 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
         chomp $memory;
         chomp($expected = $expected_ascii);
         is  ( $memory, $expected, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>');
+        test_ascii( $memory, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>' );
     } else {                # binary (unpack to a string, then compare to regex)
         $memory = unpack 'H*', $memory;
         $expected = $expected_ubin;
