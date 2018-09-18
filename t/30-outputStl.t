@@ -37,11 +37,12 @@ push @$mesh, $tri;
 # note sprintf '%-8.8s   <%.9e,%.9e,%.9e> <%.9e,%.9e,%.9e> <%.9e,%.9e,%.9e>', '', map { @$_ } @$_ for @$mesh;
 
 # define the expected values for the binary and ascii tests
-my $expected_ubin = "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000000080bf0000000000000000000000000000003fd7b35d3f000000000000803f0000000000000000000000000000ef5b71bfabaaaa3e0000000000000000000000000000803f00000000000000000000003f3acd933eec05513f0000ec05513fef5bf13eabaaaa3e0000803f00000000000000000000003fd7b35d3f000000000000003f3acd933eec05513f0000ec0551bfef5bf13eabaaaa3e0000003fd7b35d3f000000000000000000000000000000000000003f3acd933eec05513f0000";
+my $expected_ubin = qr"................................................................................................................................................................04000000........................0000000000000000000000000000003fd7b35d3f000000000000803f00000000000000000000........................0000000000000000000000000000803f00000000000000000000003f3acd933eec05513f0000........................0000803f00000000000000000000003fd7b35d3f000000000000003f3acd933eec05513f0000........................0000003fd7b35d3f000000000000000000000000000000000000003f3acd933eec05513f0000";
     # expected unpacked bin.  comments that follow help describe what's going on...
-    #               "null header....................................................................................................................................................'########n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'"
+    #                 "null header....................................................................................................................................................'########n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'"
     # if the bigendian pack fails, it will be
-    #               "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000bf8000000000000000000000000000003f0000003f5db3d7000000003f8000000000000000000000000000000000bf715bef3eaaaaab0000000000000000000000003f80000000000000000000003f0000003e93cd3a3f5105ec00003f5105ec3ef15bef3eaaaaab3f80000000000000000000003f0000003f5db3d7000000003f0000003e93cd3a3f5105ec0000bf5105ec3ef15bef3eaaaaab3f0000003f5db3d7000000000000000000000000000000003f0000003e93cd3a3f5105ec0000"
+    #                 "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000bf8000000000000000000000000000003f0000003f5db3d7000000003f8000000000000000000000000000000000bf715bef3eaaaaab0000000000000000000000003f80000000000000000000003f0000003e93cd3a3f5105ec00003f5105ec3ef15bef3eaaaaab3f80000000000000000000003f0000003f5db3d7000000003f0000003e93cd3a3f5105ec0000bf5105ec3ef15bef3eaaaaab3f0000003f5db3d7000000000000000000000000000000003f0000003e93cd3a3f5105ec0000"
+    # 2018-Sep-18: converted to regular expression, where the header and normal vectors can be anything (required, since I've lost control over those when I switched to using CAD::Format::STL)
 my $expected_ascii = do {
     # automatically generate it: when I hardcoded the ascii, then there are discrepancies between
     #   machines where "%16.7e" will give "...e+000" and "...e+00"; by generating using
@@ -62,18 +63,18 @@ my $expected_ascii = do {
    }
    $x .= sprintf "endsolid OBJECT\n";
 };
+# TODO (2018-Sep-18): need to replace the single $expected_ascii with a function that will wrap it, and parse for individual components of the expected ascii
 
 foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     my $memory = '';
     open my $fh, '>', \$memory or die "in-memory handle failed: $!";
     outputStl($mesh, $fh, $asc);
+    close($fh);
     my $expected;
     my $is_ascii = 0;
     while(1) {
         my $nmesh = @$mesh;
-warn nmesh => "\t" => $nmesh;
         my $count = unpack 'L<', substr($memory, 80, 4);
-warn count => "\t" => $count;
         $is_ascii++, last   unless $nmesh == $count;
         my $exp_size =
             + 80 # eighty header bytes
@@ -84,23 +85,20 @@ warn count => "\t" => $count;
                 * 4 # four bytes per value
                 + 2 # the trailing short (aka 'attribute byte count')
             );
-warn exp_size => "\t" => $exp_size;
         my $got_size = length($memory);
-warn got_size => "\t" => $got_size;
         $is_ascii++, last   unless $exp_size == $got_size;
         last;
     }
     if($is_ascii) {       # ascii
         chomp $memory;
         chomp($expected = $expected_ascii);
-    } else {                # binary (need to unpack to a string)
-        $expected = $expected_ubin;
+        is  ( $memory, $expected, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>');
+    } else {                # binary (unpack to a string, then compare to regex)
         $memory = unpack 'H*', $memory;
+        $expected = $expected_ubin;
+        like( $memory, $expected, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>');
     }
     note sprintf "MEMORY[%8.8s] = '%s'\n", defined $asc ? $asc : '<undef>', $memory;
-    is( $memory, $expected, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>');
-    close($fh);
-die "\n";
 }
 {
     my $tdir;
@@ -156,10 +154,10 @@ die "\n";
         $ret;
     };
 
-    is( $memout, $expected_ubin,  'outputStl(mesh, STDOUT > memfile, binary)' );
-    is( $memerr, $expected_ubin,  'outputStl(mesh, STDERR > memfile, binary)' );
-    is( $slurp1, $expected_ubin,  sprintf 'outputStl(mesh, "%s", binary)', $f1 );
-    is( $slurp2, $expected_ascii, sprintf 'outputStl(mesh, "%s", ascii)', $f2 );
+    like( $memout, $expected_ubin,  'outputStl(mesh, STDOUT > memfile, binary)' );
+    like( $memerr, $expected_ubin,  'outputStl(mesh, STDERR > memfile, binary)' );
+    like( $slurp1, $expected_ubin,  sprintf 'outputStl(mesh, "%s", binary)', $f1 );
+    is  ( $slurp2, $expected_ascii, sprintf 'outputStl(mesh, "%s", ascii)', $f2 );
 
 }
 

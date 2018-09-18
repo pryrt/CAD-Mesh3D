@@ -335,14 +335,14 @@ sub outputStl {
         croak sprintf('!ERROR! outputStl(): unknown asc/bin switch "%s"', $_) if $_ && /\D/;
     }   # /check_asc
     binmode $fh unless $asc;
-warn "asc = ", ($asc // '<undef>'), "\n";
+
     #############################################################################################
     # Try using CAD::Format::STL...
     #############################################################################################
     if(1) { #
         my $stl = CAD::Format::STL->new;
         my $part = $stl->add_part("my part", @$mesh);
-use Data::Dumper; warn Dumper $stl;
+
         if($asc) {
             $stl->save( ascii => $fh );
         } else {
