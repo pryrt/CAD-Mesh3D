@@ -1,4 +1,4 @@
-use 5.010;      # v5.8 equired for in-memory files; v5.10 required for named backreferences
+use 5.010;      # v5.8 equired for in-memory files; v5.10 required for named backreferences and // in the commented-note() calls
 use strict;
 use warnings;
 use Test::More tests => 5 + 5*28 + 3;
@@ -36,45 +36,36 @@ push @$mesh, $tri;
 # note 'MESH:';
 # note sprintf '%-8.8s   <%.9e,%.9e,%.9e> <%.9e,%.9e,%.9e> <%.9e,%.9e,%.9e>', '', map { @$_ } @$_ for @$mesh;
 
-# define the expected values for the binary and ascii tests
+# define the expected values for the binary tests
 my $expected_ubin = qr"................................................................................................................................................................04000000........................0000000000000000000000000000003fd7b35d3f000000000000803f00000000000000000000........................0000000000000000000000000000803f00000000000000000000003f3acd933eec05513f0000........................0000803f00000000000000000000003fd7b35d3f000000000000003f3acd933eec05513f0000........................0000003fd7b35d3f000000000000000000000000000000000000003f3acd933eec05513f0000";
     # expected unpacked bin.  comments that follow help describe what's going on...
     #                 "null header....................................................................................................................................................'########n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'n1-----'n2-----'n3-----'a1-----'a2-----'a3-----'b1-----'b2-----'b3-----'c1-----'c2-----'c3-----'sss'"
     # if the bigendian pack fails, it will be
     #                 "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000040000000000000000000000bf8000000000000000000000000000003f0000003f5db3d7000000003f8000000000000000000000000000000000bf715bef3eaaaaab0000000000000000000000003f80000000000000000000003f0000003e93cd3a3f5105ec00003f5105ec3ef15bef3eaaaaab3f80000000000000000000003f0000003f5db3d7000000003f0000003e93cd3a3f5105ec0000bf5105ec3ef15bef3eaaaaab3f0000003f5db3d7000000000000000000000000000000003f0000003e93cd3a3f5105ec0000"
     # 2018-Sep-18: converted to regular expression, where the header and normal vectors can be anything (required, since I've lost control over those when I switched to using CAD::Format::STL)
-my $flattened;
-my $expected_ascii = do {
-    # automatically generate it: when I hardcoded the ascii, then there are discrepancies between
-    #   machines where "%16.7e" will give "...e+000" and "...e+00"; by generating using
-    #   the same sprintf that's used in the library for that run, you eliminate that discrepancy
+
+# define the expected values for the ascii tests
+my $exp_ascii_aref = do {
+    # automatically generate it: need to enforce roundoff, so match will be correct
+    # 2018-Sep-19: no longer need normals, since those aren't compared (cannot control whether underlying library will include normals in saves or not)
     my @v = (
-        [0,0,-1], [0,0,0], [5.0e-1, 8.6602540e-1, 0], [1,0,0],
-        [0,-9.4280904e-1,3.3333333e-1], [0,0,0], [1,0,0], [5.0000000e-001,2.8867513e-001,8.1649658e-001],
-        [8.1649658e-001, 4.7140452e-001, 3.3333333e-001], [1.0000000e+000, 0.0000000e+000, 0.0000000e+000], [5.0000000e-001, 8.6602540e-001, 0.0000000e+000], [5.0000000e-001, 2.8867513e-001, 8.1649658e-001],
-        [-8.1649658e-001, 4.7140452e-001, 3.3333333e-001], [5.0000000e-001, 8.6602540e-001, 0.0000000e+000], [0.0000000e+000, 0.0000000e+000, 0.0000000e+000], [5.0000000e-001, 2.8867513e-001, 8.1649658e-001],
+        [0,0,0], [5.0e-1, 8.6602540e-1, 0], [1,0,0],
+        [0,0,0], [1,0,0], [5.0000000e-001,2.8867513e-001,8.1649658e-001],
+        [1.0000000e+000, 0.0000000e+000, 0.0000000e+000], [5.0000000e-001, 8.6602540e-001, 0.0000000e+000], [5.0000000e-001, 2.8867513e-001, 8.1649658e-001],
+        [5.0000000e-001, 8.6602540e-001, 0.0000000e+000], [0.0000000e+000, 0.0000000e+000, 0.0000000e+000], [5.0000000e-001, 2.8867513e-001, 8.1649658e-001],
     );
 
-    # make a flattened array, rounded, for comparing the final vectors => does not include normals
-    $flattened = [@v];
-    splice @$flattened, $_, 1 for (12,8,4,0);     # the @v, without normal vectors
-    foreach my $i ( 0 .. $#$flattened ) {
+    # round the array coordinates
+    foreach my $i ( 0 .. $#v ) {
         foreach my $j ( 0 .. 2 ) {
-            $flattened->[$i][$j] = 0 + sprintf '%.8f', $flattened->[$i][$j];
+            $v[$i][$j] = 0 + sprintf '%.8f', $v[$i][$j];
         }
     }
 
-    # expected ascii
-    my $x .= sprintf "solid OBJECT\n";
-    for(1..4) {
-        $x .= sprintf "    facet normal %16.7e %16.7e %16.7e\n", @{ shift @v };
-        $x .= sprintf "        outer loop\n";
-        $x .= sprintf "            vertex %16.7e %16.7e %16.7e\n", @{ shift @v } for 1 .. 3;
-        $x .= sprintf "        endloop\n";
-        $x .= sprintf "    endfacet\n";
-    }
-    $x .= sprintf "endsolid OBJECT\n";
+    [@v];
 };
+
+# compare the expected values for the ascii tests
 sub test_ascii {
     my($ascii_string, $expect_aref, $test_name) = @_;
     $test_name = "test_ascii::${test_name}";
@@ -118,6 +109,7 @@ sub test_ascii {
     note "\n";
 }
 
+# loop through the mainline tests using in-memory file
 foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     my $memory = '';
     open my $fh, '>', \$memory or die "in-memory handle failed: $!";
@@ -144,9 +136,7 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     }
     if($is_ascii) {       # ascii
         chomp $memory;
-        chomp($expected = $expected_ascii);
-        #is  ( $memory, $expected, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>');
-        test_ascii( $memory, $flattened, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>' );
+        test_ascii( $memory, $exp_ascii_aref, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>' );
     } else {                # binary (unpack to a string, then compare to regex)
         $memory = unpack 'H*', $memory;
         $expected = $expected_ubin;
@@ -154,6 +144,8 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     }
     #note sprintf "MEMORY[%8.8s] = '%s'\n", defined $asc ? $asc : '<undef>', $memory;
 }
+
+# also verify STDOUT, STDERR (both redirected to in-memory) STL output, as well as filesystem STL output using temporary files
 {
     my $tdir;
     for my $try ( $ENV{TEMP}, $ENV{TMP}, '/tmp', '.' ) {
@@ -211,8 +203,7 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     like( $memout, $expected_ubin,  'outputStl(mesh, STDOUT > memfile, binary): binary file matches' );
     like( $memerr, $expected_ubin,  'outputStl(mesh, STDERR > memfile, binary): binary file matches' );
     like( $slurp1, $expected_ubin,  sprintf 'outputStl(mesh, "%s", binary): binary file matches', $f1 );
-#    is  ( $slurp2, $expected_ascii, sprintf 'outputStl(mesh, "%s", ascii)', $f2 );
-    test_ascii( $slurp2, $flattened, sprintf 'outputStl(mesh, "%s", ascii)', $f2 );
+    test_ascii( $slurp2, $exp_ascii_aref, sprintf 'outputStl(mesh, "%s", ascii)', $f2 );
 
 }
 
