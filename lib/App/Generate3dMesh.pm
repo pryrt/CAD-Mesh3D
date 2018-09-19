@@ -5,7 +5,7 @@ use Carp;
 use 5.010;  # M::V::R requires 5.010, so might as well make use of the defined-or // notation :-)
 use Math::Vector::Real 0.18;
 use CAD::Format::STL qw//;
-our $VERSION = 0.001_003;
+our $VERSION = 0.001_004;
 
 =head1 NAME
 
@@ -337,65 +337,20 @@ sub outputStl {
     binmode $fh unless $asc;
 
     #############################################################################################
-    # Try using CAD::Format::STL...
+    # use CAD::Format::STL to output the STL
     #############################################################################################
-    if(1) { #
-        my $stl = CAD::Format::STL->new;
-        my $part = $stl->add_part("my part", @$mesh);
+    my $stl = CAD::Format::STL->new;
+    my $part = $stl->add_part("my part", @$mesh);
 
-        if($asc) {
-            $stl->save( ascii => $fh );
-        } else {
-            $stl->save( binary => $fh );
-        }
-
-        close($fh) if $doClose;
-        return;
-    }
-    #############################################################################################
-    # old:
-    #############################################################################################
-    # actually output things...
-    # printf STDERR "DEBUG  outputStl(%s) | %s %s # %f\n", join(',', $mesh, "${fn}:${fh}", $asc), $fh, scalar localtime, rand 100;
     if($asc) {
-        printf $fh "solid %s\n", 'OBJECT';
+        $stl->save( ascii => $fh );
     } else {
-        # PREFIX/HEADER (80 NULL bytes)
-        print $fh pack 'x[80]', 0;
-        # number of triangles in the mesh
-        print $fh pack 'V', scalar @$mesh;
+        $stl->save( binary => $fh );
     }
-    foreach my $tri (@$mesh) {
-        # output normal
-        my $cr = facetNormal($tri);
-        if($asc) {
-            printf $fh "    facet normal %16.7e %16.7e %16.7e\n", @$cr;
-            printf $fh "        outer loop\n";
-        } else {
-            print $fh __f3pack(@$cr);
-        }
-
-        # output each vertex
-        foreach my $v (@$tri) {
-            if($asc) {
-                printf $fh "            vertex %16.7e %16.7e %16.7e\n", @$v;
-            } else {
-                print $fh __f3pack(@$v);
-            }
-        }
-
-        # end of this facet
-        if($asc) {
-            printf $fh "        endloop\n";
-            printf $fh "    endfacet\n";
-        } else {
-            print $fh pack 'v', 0x0000; # the attribute byte count = 0
-        }
-    }
-    printf $fh "endsolid %s\n", 'OBJECT'    if $asc;
 
     # close the file, if outputStl() is where the handle was opened (ie, not on existing fh, STDERR, or STDOUT)
     close($fh) if $doClose;
+    return;
 }
 
 =head1 SEE ALSO
