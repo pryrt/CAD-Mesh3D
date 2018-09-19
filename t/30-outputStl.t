@@ -1,7 +1,7 @@
 use 5.010;      # v5.8 equired for in-memory files; v5.10 required for named backreferences
 use strict;
 use warnings;
-use Test::More tests => 13;
+use Test::More tests => 5 + 5*28 + 3;
 
 use App::Generate3dMesh qw(:all);
 
@@ -75,18 +75,17 @@ my $expected_ascii = do {
     }
     $x .= sprintf "endsolid OBJECT\n";
 };
-# TODO (2018-Sep-18): need to replace the single $expected_ascii with a function that will wrap it, and parse for individual components of the expected ascii
 sub test_ascii {
-    my($ascii_string,$test_name) = @_;
-    note "\n";
-    note test_ascii => "\t" => $test_name;
+    my($ascii_string, $expect_aref, $test_name) = @_;
+    $test_name = "test_ascii::${test_name}";
+    note "\n", $test_name;
     $ascii_string =~ s/\h+/ /gm;  # normalize horizontal whitespace
     $ascii_string =~ s/^\s+//gm;  # trim leading whitespace on any line
     $ascii_string =~ s/\s+$//gm;  # trim trailing whitespace on any line
     #note "-----\n", $ascii_string, "\n=====\n";
     $ascii_string =~ m/^solid *(?<name>\V*?)$(?<content>.*)^endsolid *\g{name}*$/ms;
     my $name = $+{name};
-    note "\t", name => "\t", $name;
+    #note "\t", name => "\t", $name;
     my $content = $+{content};
     #note "\t", content => "\t", $content;
     ok $content, "${test_name}: solid/endsolid has content";
@@ -97,7 +96,7 @@ sub test_ascii {
     foreach my $facet ( @facets ) {
         #note "facet {\n", $facet, "\n}\n";
         my @nv = $facet =~ m/normal (\S+) (\S+) (\S+)/gms;
-        note "normal: [@nv]";
+        #note "normal: [@nv]";
         is scalar(@nv), 3, "${test_name}: facet normal has three coordinates";
         $facet =~ m/^outer loop$(?<content>.*)^endloop$/ms;
         $content = $+{content};
@@ -108,16 +107,15 @@ sub test_ascii {
         foreach my $vstr ( @verts ) {
             $vstr =~ m/\Avertex (?<x>\S+) (?<y>\S+) (?<z>\S+)\Z/ms;
             my $pt = [map {0 + sprintf '%.8f', $_} @+{qw/x y z/}];
-            note pt => "\t[@$pt] = $pt";
+            #note pt => "\t[@$pt] = $pt";
             is scalar(@$pt), 3, "${test_name}: vertex has three coordinates";
             push @vectors, $pt;
         }
     }
     is scalar(@vectors), 12, "${test_name}: found a total of 12 vertices in all the facets";
-    is_deeply \@vectors, $flattened, "${test_name}: vertices ok" or diag explain \@vectors;
+    is_deeply \@vectors, $expect_aref, "${test_name}: vertices ok" or diag explain \@vectors;
 
     note "\n";
-    die "\n";
 }
 
 foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
@@ -147,14 +145,14 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     if($is_ascii) {       # ascii
         chomp $memory;
         chomp($expected = $expected_ascii);
-        is  ( $memory, $expected, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>');
-        test_ascii( $memory, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>' );
+        #is  ( $memory, $expected, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>');
+        test_ascii( $memory, $flattened, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>' );
     } else {                # binary (unpack to a string, then compare to regex)
         $memory = unpack 'H*', $memory;
         $expected = $expected_ubin;
-        like( $memory, $expected, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>');
+        like( $memory, $expected, sprintf 'outputStl(mesh, fh, "%s"): binary file matches', defined $asc ? $asc : '<undef>');
     }
-    note sprintf "MEMORY[%8.8s] = '%s'\n", defined $asc ? $asc : '<undef>', $memory;
+    #note sprintf "MEMORY[%8.8s] = '%s'\n", defined $asc ? $asc : '<undef>', $memory;
 }
 {
     my $tdir;
@@ -196,7 +194,7 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
         binmode $fh;
         my $ret = unpack 'H*', <$fh>;
         close $fh;
-        print qx/ls -l $f1/;
+        #note qx/ls -l $f1/;
         unlink $f1 or diag "could not unlink \"$f1\": $!";
         $ret;
     };
@@ -204,16 +202,17 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
         local $/ = undef;
         open my $fh, '<', $f2 or die "cannot read \"$f2\": $!";
         my $ret = <$fh>;
-        print qx/ls -l $f2/;
+        #note qx/ls -l $f2/;
         close $fh;
         unlink $f2 or diag "could not unlink \"$f2\": $!";
         $ret;
     };
 
-    like( $memout, $expected_ubin,  'outputStl(mesh, STDOUT > memfile, binary)' );
-    like( $memerr, $expected_ubin,  'outputStl(mesh, STDERR > memfile, binary)' );
-    like( $slurp1, $expected_ubin,  sprintf 'outputStl(mesh, "%s", binary)', $f1 );
-    is  ( $slurp2, $expected_ascii, sprintf 'outputStl(mesh, "%s", ascii)', $f2 );
+    like( $memout, $expected_ubin,  'outputStl(mesh, STDOUT > memfile, binary): binary file matches' );
+    like( $memerr, $expected_ubin,  'outputStl(mesh, STDERR > memfile, binary): binary file matches' );
+    like( $slurp1, $expected_ubin,  sprintf 'outputStl(mesh, "%s", binary): binary file matches', $f1 );
+#    is  ( $slurp2, $expected_ascii, sprintf 'outputStl(mesh, "%s", ascii)', $f2 );
+    test_ascii( $slurp2, $flattened, sprintf 'outputStl(mesh, "%s", ascii)', $f2 );
 
 }
 
