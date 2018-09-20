@@ -90,8 +90,6 @@ ok($@, 'Error Handling: createMesh(second Vertex invalid)') or diag "\texplain: 
 eval { createMesh( [[1,2,3], [0,0,0], 3] ); }; chomp($@);
 ok($@, 'Error Handling: createMesh(third  Vertex invalid)') or diag "\texplain: ", explain $@;
 
-# TODO = outputStl(): invalid mesh
-
 # will need a valid mesh for the remaining outputStl tests
 my $lft = [sqrt( 0/12),sqrt(0/12),sqrt(0/12)];
 my $rgt = [sqrt(12/12),sqrt(0/12),sqrt(0/12)];

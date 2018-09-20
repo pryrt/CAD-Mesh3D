@@ -108,7 +108,7 @@ sub createFacet {
             unless ref $v;
 
         croak sprintf("!ERROR! createFacet(t1,t2,t3): each Vertex must be an array ref or equivalent object; you supplied \"%s\"", ref $v)
-            unless $v->isa('ARRAY');
+            unless UNIVERSAL::isa($v,'ARRAY');  # use function notation, in case $v is not blessed
 
         croak sprintf("!ERROR! createFacet(t1,t2,t3): each Vertex requires 3 coordinates; you supplied %d: <%s>", scalar @$v, join(",", @$v))
             unless 3==@$v;
@@ -174,7 +174,7 @@ sub createMesh {
                 unless ref $v;
 
             croak sprintf("!ERROR! createMesh(...): each Vertex must be an array ref or equivalent object; you supplied \"%s\"", ref $v)
-                unless $v->isa('ARRAY');
+                unless UNIVERSAL::isa($v, 'ARRAY');
 
             croak sprintf("!ERROR! createMesh(...): each Vertex in each triangle requires 3 coordinates; you supplied %d: <%s>", scalar @$v, join(",", @$v))
                 unless 3==@$v;
