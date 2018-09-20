@@ -1,19 +1,19 @@
-package App::Generate3dMesh;
+package CAD::Mesh3D;
 use warnings;
 use strict;
 use Carp;
 use 5.010;  # M::V::R requires 5.010, so might as well make use of the defined-or // notation :-)
 use Math::Vector::Real 0.18;
 use CAD::Format::STL qw//;
-our $VERSION = 0.001_004;
+our $VERSION = 0.001_011;
 
 =head1 NAME
 
-App::Generate3dMesh - Create and Manipulate 3D Vertices and Meshes and output for 3D printing
+CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D printing
 
 =head1 SYNOPSIS
 
- use App::Generate3dMesh qw(:create :output);
+ use CAD::Mesh3D qw(:create :output);
  my $vect = createVertex();
  my $tri  = createFacet($v1, $v2, $v3);
  my $mesh = createMesh();
@@ -25,7 +25,7 @@ App::Generate3dMesh - Create and Manipulate 3D Vertices and Meshes and output fo
 =head1 DESCRIPTION
 
 A framework to create and manipulate 3D vertices and meshes, suitable for generating STL files
-for 3D printing.
+(or other similar formats) for 3D printing.
 
 A B<Mesh> is the container for the surface of the shape or object being generated.  The surface is broken down
 into locally-flat pieces known as B<Facet>s.  Each Facet is a triangle made from exactly points, called
@@ -275,19 +275,6 @@ They can be imported into your script I<en masse> using the C<:output> tag.
 
 =cut
 
-# need to decide whether to use the perl>=v5.010's pack 'f<' notation,
-#   or mimic it based on the endianness of packed floats
-if( $] lt '5.010' ) {
-    my $str = join('', unpack("H*", pack 'f' => 1));
-    if('0000803f' eq $str) {        # little endian, so can use native pack
-        *__f3pack = sub { pack 'f3', @_ };
-    } elsif('3f800000' eq $str) {   # big endian, so need to swizzle things
-        *__f3pack = sub { my $p; $p .= reverse pack('f', $_) for @_; return $p };
-    }
-} else {
-    *__f3pack = sub { pack 'f<3', @_ };
-}
-
 =head3 outputStl
 
  outputStl($mesh, $file, $asc);
@@ -371,10 +358,6 @@ scheme is wrong.
 =over
 
 =item * Input from STL
-
-=item * Move C<outputStl()> to a separate module (for easy plug-and-play)
-
-E<rArr> 2018-Sep-12: realized that once it's pluggable in a separate module, the windows-bug is the only reason to not use L<CAD::Format::STL> for the backend (I've patched my copy, and will be attempting contact with the maintainer).  This would also apply to "Input from STL"
 
 =item * Plug-and-Play
 

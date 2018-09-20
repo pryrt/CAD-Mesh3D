@@ -3,7 +3,7 @@ use warnings;
 use Test::More;
 #use Data::Dumper;
 
-use App::Generate3dMesh ':all';
+use CAD::Mesh3D ':all';
 
 ################################################################
 # valid initialization

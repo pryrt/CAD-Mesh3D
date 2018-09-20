@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test::More tests => 12;
 
-use App::Generate3dMesh qw(:math);
+use CAD::Mesh3D qw(:math);
 
 is_deeply( unitDelta([  +1,  +1,  +1], [  +1,  +1,  +1]), [         0,         0,         0], 'unitDelta(<  +1,  +1,  +1>, <  +1,  +1,  +1>)');
 is_deeply( unitDelta([  +1,  +1,  +1], [  +3,  +3,  +3]), [+sqrt(1/3),+sqrt(1/3),+sqrt(1/3)], 'unitDelta(<  +1,  +1,  +1>, <  +3,  +3,  +3>)');

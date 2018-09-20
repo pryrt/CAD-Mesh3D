@@ -1,10 +1,10 @@
 # NAME
 
-App::Generate3dMesh - Create and Manipulate 3D Vertices and Meshes and output for 3D printing
+CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D printing
 
 # SYNOPSIS
 
-    use App::Generate3dMesh qw(:create :output);
+    use CAD::Mesh3D qw(:create :output);
     my $vect = createVertex();
     my $tri  = createFacet($v1, $v2, $v3);
     my $mesh = createMesh();
@@ -16,7 +16,7 @@ App::Generate3dMesh - Create and Manipulate 3D Vertices and Meshes and output fo
 # DESCRIPTION
 
 A framework to create and manipulate 3D vertices and meshes, suitable for generating STL files
-for 3D printing.
+(or other similar formats) for 3D printing.
 
 A **Mesh** is the container for the surface of the shape or object being generated.  The surface is broken down
 into locally-flat pieces known as **Facet**s.  Each Facet is a triangle made from exactly points, called
@@ -35,10 +35,6 @@ floating-point values to represent the position in 3D space.
 # TODO
 
 - Input from STL
-- Move `outputStl()` to a separate module (for easy plug-and-play)
-
-    ⇒ 2018-Sep-12: realized that once it's pluggable in a separate module, the windows-bug is the only reason to not use [CAD::Format::STL](https://metacpan.org/pod/CAD::Format::STL) for the backend (I've patched my copy, and will be attempting contact with the maintainer).  This would also apply to "Input from STL"
-
 - Plug-and-Play
     - enableFormat( _Format_ )
     - enableFormat( _Format_ => _module_, _inputFunc_, _outputFunc_ )

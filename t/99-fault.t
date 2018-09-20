@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 
-use App::Generate3dMesh qw(:all);
+use CAD::Mesh3D qw(:all);
 
 ################################################################
 # error handling

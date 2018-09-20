@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Test::More tests => 5 + 5*28 + 3;
 
-use App::Generate3dMesh qw(:all);
+use CAD::Mesh3D qw(:all);
 
 my $lft = createVertex(0,0,0);
 my $rgt = createVertex(1,0,0);
