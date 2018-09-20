@@ -420,10 +420,10 @@ Peter C. Jones C<E<lt>petercj AT cpan DOT orgE<gt>>
 
 =begin html
 
-<a href="https://github.com/pryrt/App-Generate3dMesh/issues"><img src="https://img.shields.io/github/issues/pryrt/App-Generate3dMesh.svg" alt="issues" title="issues"></a>
-<a href="https://ci.appveyor.com/project/pryrt/App-Generate3dMesh"><img src="https://ci.appveyor.com/api/projects/status/r4o672g0ua4dvt11?svg=true" alt="appveyor build status" title="appveyor build status"></a>
-<a href="https://travis-ci.org/pryrt/App-Generate3dMesh"><img src="https://travis-ci.org/pryrt/App-Generate3dMesh.svg?branch=master" alt="travis build status" title="travis build status"></a>
-<a href='https://coveralls.io/github/pryrt/App-Generate3dMesh?branch=master'><img src='https://coveralls.io/repos/github/pryrt/App-Generate3dMesh/badge.svg?branch=master' alt='Coverage Status' title='Coverage Status' /></a>
+<a href="https://github.com/pryrt/CAD-Mesh3D/issues"><img src="https://img.shields.io/github/issues/pryrt/CAD-Mesh3D.svg" alt="issues" title="issues"></a>
+<a href="https://ci.appveyor.com/project/pryrt/CAD-Mesh3D"><img src="https://ci.appveyor.com/api/projects/status/r4o672g0ua4dvt11?svg=true" alt="appveyor build status" title="appveyor build status"></a>
+<a href="https://travis-ci.org/pryrt/CAD-Mesh3D"><img src="https://travis-ci.org/pryrt/CAD-Mesh3D.svg?branch=master" alt="travis build status" title="travis build status"></a>
+<a href='https://coveralls.io/github/pryrt/CAD-Mesh3D?branch=master'><img src='https://coveralls.io/repos/github/pryrt/CAD-Mesh3D/badge.svg?branch=master' alt='Coverage Status' title='Coverage Status' /></a>
 
 =end html
 
