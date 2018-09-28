@@ -103,13 +103,13 @@ realclean ::
 
 # auto-generate the README from the lib/CAD/Mesh3D.pm
 README.md :: lib/CAD/Mesh3D.pm
-	podselect -section "NAME|SYNOPSIS|DESCRIPTION|SEE ALSO|TODO|AUTHOR|COPYRIGHT|LICENSE" lib/CAD/Mesh3D.pm > README.pod
+	$(PERL) -MPod::Simple::Select -e 'my $$p = Pod::Simple::Select->new();$$p->output_file(qq(README.pod));$$p->select({head1 => [qq(NAME),qq(SYNOPSIS),qq(DESCRIPTION),qq(SEE ALSO),qq(TODO),qq(AUTHOR),qq(COPYRIGHT),qq(LICENSE)]});$$p->parse_file(qq(lib/CAD/Mesh3D.pm));'
 	pod2markdown README.pod README.md
 	$(RM_F) README.pod
 
 # auto-generate the LICENSE file from the lib/Math/PRBS.pm
 LICENSE :: lib/CAD/Mesh3D.pm
-	podselect -section "AUTHOR|COPYRIGHT|LICENSE" lib/CAD/Mesh3D.pm > LICENSE.pod
+	$(PERL) -MPod::Simple::Select -e 'my $$p = Pod::Simple::Select->new();$$p->output_file(qq(LICENSE.pod));$$p->select({head1 => [qw/AUTHOR COPYRIGHT LICENSE/]});$$p->parse_file(qq(lib/CAD/Mesh3D.pm));'
 	pod2text LICENSE.pod LICENSE
 	$(RM_F) LICENSE.pod
 

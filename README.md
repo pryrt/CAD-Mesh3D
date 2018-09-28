@@ -23,6 +23,8 @@ into locally-flat pieces known as **Facet**s.  Each Facet is a triangle made fro
 **Vertex**es or vertices.  Each Vertex is made up of three x, y, and z **coordinate**s, which are just
 floating-point values to represent the position in 3D space.
 
+# FUNCTIONS
+
 # SEE ALSO
 
 - [CAD::Format::STL](https://metacpan.org/pod/CAD::Format::STL) - includes both input and output from STL (ASCII and BINARY)
