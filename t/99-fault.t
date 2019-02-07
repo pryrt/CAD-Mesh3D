@@ -97,15 +97,35 @@ my $mid = [sqrt( 3/12),sqrt(9/12),sqrt(0/12)];
 my $top = [sqrt( 3/12),sqrt(1/12),sqrt(8/12)];
 my $mesh = [[$lft, $mid, $rgt], [$lft, $rgt, $top], [$rgt, $mid, $top], [$mid, $lft, $top]];
 
+# addToMesh():
+eval { addToMesh( undef ); }; chomp($@);
+ok($@, 'Error Handling: addToMesh(undef): no mesh') or diag "\texplain: ", $@;
+eval { addToMesh( $mesh, undef ); }; chomp($@);
+ok($@, 'Error Handling: addToMesh(mesh, undef): no triangle(s)') or diag "\texplain: ", $@;
+eval { addToMesh( $mesh, 5 ); }; chomp($@);
+ok($@, 'Error Handling: addToMesh(mesh, 5): scalar instead of triangle') or diag "\texplain: ", $@;
+eval { addToMesh( $mesh, {} ); }; chomp($@);
+ok($@, 'Error Handling: addToMesh(mesh, {}): triangle is wrong kind of reference') or diag "\texplain: ", $@;
+eval { addToMesh( $mesh, [] ); }; chomp($@);
+ok($@, 'Error Handling: addToMesh(mesh, []): empty triangle') or diag "\texplain: ", $@;
+eval { addToMesh( $mesh, [$lft, $top, undef] ); }; chomp($@);
+ok($@, 'Error Handling: addToMesh(mesh, [left, top, undef]): one vertex undef') or diag "\texplain: ", $@;
+eval { addToMesh( $mesh, [$lft, 7, $mid] ); }; chomp($@);
+ok($@, 'Error Handling: addToMesh(mesh, [left, scalar, middle]): one vertex scalar') or diag "\texplain: ", $@;
+eval { addToMesh( $mesh, [$lft, $top, {}] ); }; chomp($@);
+ok($@, 'Error Handling: addToMesh(mesh, [left, top, {}]): one vertex wrong reference type') or diag "\texplain: ", $@;
+eval { addToMesh( $mesh, [[], $top, $mid] ); }; chomp($@);
+ok($@, 'Error Handling: addToMesh(mesh, [[], top, mid]): one vertex empty') or diag "\texplain: ", $@;
+
 # outputStl(): missing fh
 eval { outputStl($mesh) }; chomp($@);
 ok($@, 'Error Handling: outputStl(missing fh)') or diag "\texplain: ", explain $@;
 
-# TODO = outputStl(): cannot write to fh
+# outputStl(): cannot write to fh
 eval { outputStl($mesh, '/path/does/not/exist') }; chomp($@);
 ok($@, 'Error Handling: outputStl(missing fh)') or diag "\texplain: ", explain $@;
 
-# TODO = outputStl(): non-recognized $ascii argument
+# outputStl(): non-recognized $ascii argument
 eval { outputStl($mesh, \*STDERR, 'bad') }; chomp($@);
 ok($@, 'Error Handling: outputStl(bad ascii switch)') or diag "\texplain: ", explain $@;
 

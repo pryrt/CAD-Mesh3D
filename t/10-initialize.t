@@ -44,4 +44,15 @@ is_deeply( $m->[0],  $t, 'createMesh(): mesh.facet-0 == t');
 is_deeply( $m->[1], $q1, 'createMesh(): mesh.facet-1 == q1');
 is_deeply( $m->[2], $q2, 'createMesh(): mesh.facet-2 == q2');
 
+my $v456 = createVertex(4,5,6);
+my $q3 = createFacet($v111, $v123, $v456);
+my $q4 = createFacet($v123, $v111, $v456);
+addToMesh($m, $q3, $q4);
+is( scalar @$m, 5, 'addToMesh(): mesh should have 5 elements now');
+is_deeply( $m->[0],  $t, 'addToMesh(): mesh.facet-0 == t');
+is_deeply( $m->[1], $q1, 'addToMesh(): mesh.facet-1 == q1');
+is_deeply( $m->[2], $q2, 'addToMesh(): mesh.facet-2 == q2');
+is_deeply( $m->[3], $q3, 'addToMesh(): mesh.facet-3 == q3');
+is_deeply( $m->[4], $q4, 'addToMesh(): mesh.facet-4 == q4');
+
 done_testing();

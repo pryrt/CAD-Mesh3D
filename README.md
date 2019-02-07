@@ -8,7 +8,7 @@ CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D pri
     my $vect = createVertex();
     my $tri  = createFacet($v1, $v2, $v3);
     my $mesh = createMesh();
-    #addToMesh($mesh, $tri, ...);    # not implemented yet
+    addToMesh($mesh, $tri);
     push @$mesh, $tri;               # manual method of addToMesh()
     ...
     outputStl($mesh, $filehandle_or_filename, $true_for_ascii_false_for_binary);

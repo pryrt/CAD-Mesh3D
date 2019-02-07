@@ -17,7 +17,7 @@ CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D pri
  my $vect = createVertex();
  my $tri  = createFacet($v1, $v2, $v3);
  my $mesh = createMesh();
- #addToMesh($mesh, $tri, ...);    # not implemented yet
+ addToMesh($mesh, $tri);
  push @$mesh, $tri;               # manual method of addToMesh()
  ...
  outputStl($mesh, $filehandle_or_filename, $true_for_ascii_false_for_binary);
@@ -41,7 +41,7 @@ floating-point values to represent the position in 3D space.
 ################################################################
 
 use Exporter 5.57 'import';     # v5.57 needed for getting import() without @ISA
-our @EXPORT_CREATE  = qw(createVertex createFacet createQuadrangleFacets createMesh);
+our @EXPORT_CREATE  = qw(createVertex createFacet createQuadrangleFacets createMesh addToMesh);
 our @EXPORT_VERTEX  = qw(createVertex getx gety getz);
 our @EXPORT_MATH    = qw(unitDelta unitCross facetNormal);
 our @EXPORT_OUTPUT  = qw(outputStl);
@@ -181,6 +181,43 @@ sub createMesh {
         }
     }
     return [@_];
+}
+
+=head4 addToMesh
+
+ addToMesh($mesh, $tri);
+ addToMesh($mesh, $tri1, ... $triN);
+
+=cut
+
+sub addToMesh {
+    my $mesh = shift;
+    croak sprintf("!ERROR! addToMesh(\$mesh, \@triangles): mesh must have already been created")
+        unless UNIVERSAL::isa($mesh, 'ARRAY');
+    foreach my $tri ( @_ ) {
+        croak sprintf("!ERROR! addToMesh(...): each triangle must be an array ref or equivalent object; you supplied a scalar \"%s\"", $tri//'<undef>')
+            unless ref $tri;
+
+        croak sprintf("!ERROR! addToMesh(...): each triangle must be an array ref or equivalent object; you supplied \"%s\"", ref $tri)
+            unless UNIVERSAL::isa($tri, 'ARRAY');
+
+        croak sprintf("!ERROR! addToMesh(...): each triangle requires 3 Vertices; you supplied %d: <%s>", scalar @$tri, join(",", @$tri))
+            unless 3==@$tri;
+
+        foreach my $v ( @$tri ) {
+            croak sprintf("!ERROR! addToMesh(...): each Vertex must be an array ref or equivalent object; you supplied a scalar \"%s\"", $v//'<undef>')
+                unless ref $v;
+
+            croak sprintf("!ERROR! addToMesh(...): each Vertex must be an array ref or equivalent object; you supplied \"%s\"", ref $v)
+                unless UNIVERSAL::isa($v, 'ARRAY');
+
+            croak sprintf("!ERROR! addToMesh(...): each Vertex in each triangle requires 3 coordinates; you supplied %d: <%s>", scalar @$v, join(",", @$v))
+                unless 3==@$v;
+        }
+
+        push @$mesh, $tri;
+    }
+    return $mesh;
 }
 
 ################################################################
