@@ -23,8 +23,6 @@ into locally-flat pieces known as **Facet**s.  Each Facet is a triangle made fro
 **Vertex**es or vertices.  Each Vertex is made up of three x, y, and z **coordinate**s, which are just
 floating-point values to represent the position in 3D space.
 
-# FUNCTIONS
-
 # SEE ALSO
 
 - [CAD::Format::STL](https://metacpan.org/pod/CAD::Format::STL) - includes both input and output from STL (ASCII and BINARY)
@@ -39,19 +37,32 @@ floating-point values to represent the position in 3D space.
 - Input from STL
 - Plug-and-Play
     - enableFormat( _Format_ )
-    - enableFormat( _Format_ => _module_, _inputFunc_, _outputFunc_ )
+    - enableFormat( _Format_ => _module_, '_inputFunc_', '_outputFunc_' )
+    - enableFormat( _Format_ => _module_, \\&_inputFunc_, \\&_outputFunc_ )
 
         Require/import the sub-module.  Maybe also callable via the `use CAD::Mesh3D qw/Format1 Format2/`.
 
-            enableFormat( 'STL' );  # assumes CAD::Mesh3D::STL, inputStl() and outputStl()
-            enableFormat( 'PNG' => 'CAD::Mesh3D::Images', 'pngInput', 'pngOutput'); # explicit about module name and function names
+            enableFormat( 'OBJ' );  # assumes CAD::Mesh3D::OBJ, input_obj() and output_obj()
+            enableFormat( 'PNG' => 'CAD::Mesh3D::Images', \&inputFunctionNotAvail, 'pngOutput'); # explicit about module name and outuput function name; use error function for input()
+            enableFormat( 'STL' => 'CAD::Mesh3D', \&CAD::Mesh3D::inputStl, , \&CAD::Mesh3D::outputStl); # this uses the coderef notation;
 
         _Module_ should be the name of the module.  It should default to
         'CAD::Mesh3D::_Format_'.
 
-        _inputFunc_ should either be the name (relative to the given module) or a
+        _inputFunc_ should either be the name (relative to the given _Module_) or a
         coderef of an appropriate function.  You can use `\&inputFunctionNotAvail`
-        to give an error message if someone tries to use an invalid
+        to give an error message if someone tries to use an `input()` call for a
+        _Format_ that can only write out: for example, if you cannot take a PNG and
+        come up with a reasonable Mesh3D, then you would want to give the user an error
+        message.  If _inputFunc_ is missing or undefined, it will use the name of
+        `input_` followed by the lower case version _Format_).
+
+        _outputFunc_ should be either the name (relative to the given modu_Module_le)
+        or a coderef of an appropriate function.  You can use `\&outputFunctionNotAvail`
+        to give an error message if someone tries to use an `output()` call for a
+        _Format_ that can only read in: for example, if the license for some proprietary
+        3D format will allow you to read without paying a fee, but you have to pay a fee
+        to write that file type.
 
     - input( _format_, _file_, \[_options_\])
 
@@ -64,6 +75,7 @@ floating-point values to represent the position in 3D space.
         Output the mesh to the appropriate format.
 
     - \\&inputFunctionNotAvail
+    - \\&outputFunctionNotAvail
 
         Pass this to the `enableFormat()` function
 
@@ -80,7 +92,7 @@ Peter C. Jones `<petercj AT cpan DOT org>`
 
 # COPYRIGHT
 
-Copyright (C) 2017,2018 Peter C. Jones
+Copyright (C) 2017,2018,2019 Peter C. Jones
 
 # LICENSE
 
