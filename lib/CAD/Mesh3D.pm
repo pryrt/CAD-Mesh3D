@@ -281,7 +281,7 @@ sub unitCross($$) {
     return $m ? [ $dx/$m, $dy/$m, $dz/$m ] : [0,0,0];
 }
 
-=head3 unitCross
+=head3 facetNormal
 
  my $uN = facetNormal( $facet );
 
