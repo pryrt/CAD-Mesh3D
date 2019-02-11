@@ -42,6 +42,7 @@ use Exporter 5.57 'import';     # v5.57 needed for getting import() without @ISA
 our @EXPORT_CREATE  = qw(createVertex createFacet createQuadrangleFacets createMesh addToMesh);
 our @EXPORT_VERTEX  = qw(createVertex getx gety getz);
 our @EXPORT_MATH    = qw(unitDelta unitCross facetNormal);
+our @EXPORT_FORMATS = qw(enableFormat);
 our @EXPORT_OUTPUT  = qw(outputStl);
 our @EXPORT_OK      = (@EXPORT_CREATE, @EXPORT_MATH, @EXPORT_OUTPUT, @EXPORT_VERTEX);
 our @EXPORT         = @EXPORT_OK;
@@ -49,6 +50,7 @@ our %EXPORT_TAGS = (
     create          => \@EXPORT_CREATE,
     vertex          => \@EXPORT_VERTEX,
     math            => \@EXPORT_MATH,
+    formats         => \@EXPORT_FORMATS,
     output          => \@EXPORT_OUTPUT,
     all             => \@EXPORT_OK,
 );
@@ -298,6 +300,40 @@ sub facetNormal($) {
     my $uBC = unitDelta( $B, $C );
     return    unitCross( $uAB, $uBC );
 }
+
+################################################################
+# enabled formats
+################################################################
+our %EnabledFormats = ();
+
+=head2 ENABLED FORMATS
+
+If you want to have output and/or input formats specified, you need to enable them.
+This makes it simple to incorporate an add-on C<CAD::Mesh3D::NiftyFormat>
+
+    use CAD::Mesh3D;
+    CAD::Mesh3D::enableFormat( 'NiftyFormat' => CAD::Mesh3D::NiftyFormat, 'inputFunctionNameHere', \\&CAD::Mesh3D::NiftyFormat::outputFunction )
+
+
+=head3 enableFormat
+
+    use CAD::Mesh3D qw/:formats/;
+    enableFormat( $format )
+    enableFormat( $format => $moduleName, $inputFuncName, $outputFuncName )
+    enableFormat( $format => $moduleName, \\&Module::And::inputFunc, \\&Module::And::outputFunc )
+
+=cut
+
+#sub enableFormat {
+#    my $formatName = $_[0] // croak "!ERROR! enableFormat(...): requires name of format";
+#    my $formatModule = $_[1] // "CAD::Mesh3D::$formatName";
+#    eval { require $formatModule; 1; } or do {
+#        local $" = ", ";
+#        croak "!ERROR! enableFormat( @_ ): could not import $formatModule";
+#    }
+#}
+#
+#enableFormat( STL => 'CAD::Mesh3D', )
 
 ################################################################
 # file output
