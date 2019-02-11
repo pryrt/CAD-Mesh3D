@@ -34,13 +34,16 @@ is(scalar($part->facets), 12, 'twelve triangles');
   is($stl->part(-1), $part, 'got part -1');
   eval {$stl->part(-2)};
   like($@, qr/no part/, 'nothing there');
+  undef $@;
 }
 
 #################################################################
 # cover a coule of the sub-new deficiencies
 $stl->new or die "ack2";            # create new from the current
+diag __LINE__, "\t", $@;
+diag "expecting error if v0.2.1-based:";
 eval { CAD::Format::STL::new() };   # use function call rather than class method; this doesn't give valid blessing, but still works
-diag $@;
+diag "final message: ", $@;
 
 #################################################################
 # cover all of binary=> and ascii=>
