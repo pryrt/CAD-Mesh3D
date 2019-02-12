@@ -311,16 +311,23 @@ our %EnabledFormats = ();
 If you want to have output and/or input formats specified, you need to enable them.
 This makes it simple to incorporate an add-on C<CAD::Mesh3D::NiftyFormat>
 
-    use CAD::Mesh3D;
-    CAD::Mesh3D::enableFormat( 'NiftyFormat' => CAD::Mesh3D::NiftyFormat, 'inputFunctionNameHere', \\&CAD::Mesh3D::NiftyFormat::outputFunction )
-
+Eventually, L<CAD::Mesh3D::AddAFormat> will document how to write a submodule (usually in the C<CAD::Mesh3D> namespace) to provide the appropriate input and/or output functions for a given format.
 
 =head3 enableFormat
 
     use CAD::Mesh3D qw/:formats/;
     enableFormat( $format )
-    enableFormat( $format => $moduleName, $inputFuncName, $outputFuncName )
-    enableFormat( $format => $moduleName, \\&Module::And::inputFunc, \\&Module::And::outputFunc )
+    enableFormat( $format => $moduleName, $inputFunc, $outputFunc )
+    enableFormat( $format => $moduleName, \&Module::Name::inputFunc, \\&Module::Name::outputFunc )
+
+C<$moduleName> should be the name of the module.  It will default to 'CAD::Mesh3D::$format'.
+
+        Either define C<$inputFunc> as the name of a function (provided by $moduleName), or  C<\&Module::Name::inputFunc> as the (fully-qualified) coderef to a function.  Either way, the function should expect arguments C<...> (as described in L<CAD::Mesh3D::AddAFormat>), and should process a specified file into a valid C<CAD::Mesh3D> data structure, which it returns.  If the format type does not have an input function (for example, a PNG format cannot be reasonably expected to be converted back into a 3D object with appropriate coordinates and facets), you can use C<\&inputFunctionNotAvail>.
+
+        Similarly, define C<$outputFunc> as the name of a function or C<\&Module::Name::inputFunc> as the (fully-qualified) coderef to a function, where the function should expect arguments C<...> (as described in L<CAD::Mesh3D::AddAFormat>) and convert the C<CAD::Mesh3D> data into a valid file for the selected 3D format.  Again, if the format type does not have an output function (for example, some rare format may have a licensing fee to write to that format, but be free to read and interpret, so the developer is providing a read-only format), then you can use C<\&outputFunctionNotAvail>.
+
+        !!!BZZT!!! TODO: Rework this = I realized that it would be better for each C<CAD::Mesh3D::...> format to implement its own initialization, which will set the input and output functions appropriately; save the end user from having to muck about with coderefs and the like.
+
 
 =cut
 
@@ -333,6 +340,17 @@ sub enableFormat {
         croak "!ERROR! enableFormat( @_ ): \n\tcould not import $formatModule\n\t";
     }
 }
+
+=head3 inputFunctionNotAvail
+
+=head3 outputFunctionNotAvail
+
+Pass the name or coderef to these functions into L<enableFormat> to have the user's code exit with an appropriate error message if there is no appropriate input or output method for a given 3D format.
+
+=cut
+
+sub inputFunctionNotAvail { croak "Input function for {} is not available" }
+sub outputFunctionNotAvail { croak "Output function for {} is not available" }
 
 enableFormat( STL => 'CAD::Mesh3D', \&inputFunctionNotAvail, \&outputStl);
 
