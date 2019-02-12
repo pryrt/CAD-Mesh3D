@@ -64,6 +64,8 @@ floating-point values to represent the position in 3D space.
         3D format will allow you to read without paying a fee, but you have to pay a fee
         to write that file type.
 
+                !!!BZZT!!! TODO: Rework this = I realized that it would be better for each C<CAD::Mesh3D::...> format to implement its own initialization, which will set the input and output functions appropriately; save the end user from having to muck about with coderefs and the like.
+
     - input( _format_, _file_, \[_options_\])
 
         Inputs the mesh file given that format.
