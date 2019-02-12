@@ -324,16 +324,17 @@ This makes it simple to incorporate an add-on C<CAD::Mesh3D::NiftyFormat>
 
 =cut
 
-#sub enableFormat {
-#    my $formatName = $_[0] // croak "!ERROR! enableFormat(...): requires name of format";
-#    my $formatModule = $_[1] // "CAD::Mesh3D::$formatName";
-#    eval { require $formatModule; 1; } or do {
-#        local $" = ", ";
-#        croak "!ERROR! enableFormat( @_ ): could not import $formatModule";
-#    }
-#}
-#
-#enableFormat( STL => 'CAD::Mesh3D', )
+sub enableFormat {
+    my $formatName = $_[0] // croak "!ERROR! enableFormat(...): requires name of format";
+    my $formatModule = $_[1] // "CAD::Mesh3D::$formatName";
+    (my $key = $formatModule . '.pm') =~ s{::}{/}g;
+    eval { require $formatModule unless exists $INC{$key}; 1; } or do {
+        local $" = ", ";
+        croak "!ERROR! enableFormat( @_ ): \n\tcould not import $formatModule\n\t";
+    }
+}
+
+enableFormat( STL => 'CAD::Mesh3D', \&inputFunctionNotAvail, \&outputStl);
 
 ################################################################
 # file output
