@@ -129,4 +129,22 @@ ok($@, 'Error Handling: outputStl(missing fh)') or diag "\texplain: ", explain $
 eval { outputStl($mesh, \*STDERR, 'bad') }; chomp($@);
 ok($@, 'Error Handling: outputStl(bad ascii switch)') or diag "\texplain: ", explain $@;
 
+# enableFormat(): missing format
+eval { enableFormat(); }; chomp($@);
+ok($@, 'Error Handling: enableFormat(missing format name)') or diag "\texplain: ", explain $@;
+
+# enableFormat(): `require` could not find module
+eval { enableFormat( 'DoesNotExist' ); }; chomp($@);
+ok($@, 'Error Handling: enableFormat(unavailable module selected)') or diag "\texplain: ", explain $@;
+
+# enableFormat(): calls inputFunctionNotAvail
+#eval { enableFormat( 'DoesNotExist' => 'CAD::Mesh3D', \&inputFunctionNotAvail, sub { 1; } ); CAD::Mesh3D::input('DoesNotExist') }; chomp($@);
+eval { inputFunctionNotAvail(); 1; }; chomp($@);
+ok($@, 'Error Handling: enableFormat(inputFunctionNotAvail)') or diag "\texplain: ", explain $@;
+
+# enableFormat(): calls inputFunctionNotAvail
+#eval { enableFormat( 'DoesNotExist' => 'CAD::Mesh3D', sub {1;}, \&outputFunctionNotAvail); CAD::Mesh3D::output('DoesNotExist') }; chomp($@);
+eval { outputFunctionNotAvail(); 1; }; chomp($@);
+ok($@, 'Error Handling: enableFormat(outputFunctionNotAvail)') or diag "\texplain: ", explain $@;
+
 done_testing();

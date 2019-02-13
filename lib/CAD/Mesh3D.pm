@@ -42,9 +42,9 @@ use Exporter 5.57 'import';     # v5.57 needed for getting import() without @ISA
 our @EXPORT_CREATE  = qw(createVertex createFacet createQuadrangleFacets createMesh addToMesh);
 our @EXPORT_VERTEX  = qw(createVertex getx gety getz);
 our @EXPORT_MATH    = qw(unitDelta unitCross facetNormal);
-our @EXPORT_FORMATS = qw(enableFormat);
+our @EXPORT_FORMATS = qw(enableFormat inputFunctionNotAvail outputFunctionNotAvail);
 our @EXPORT_OUTPUT  = qw(outputStl);
-our @EXPORT_OK      = (@EXPORT_CREATE, @EXPORT_MATH, @EXPORT_OUTPUT, @EXPORT_VERTEX);
+our @EXPORT_OK      = (@EXPORT_CREATE, @EXPORT_MATH, @EXPORT_OUTPUT, @EXPORT_FORMATS, @EXPORT_VERTEX);
 our @EXPORT         = @EXPORT_OK;
 our %EXPORT_TAGS = (
     create          => \@EXPORT_CREATE,
@@ -332,8 +332,8 @@ C<$moduleName> should be the name of the module.  It will default to 'CAD::Mesh3
 =cut
 
 sub enableFormat {
-    my $formatName = $_[0] // croak "!ERROR! enableFormat(...): requires name of format";
-    my $formatModule = $_[1] // "CAD::Mesh3D::$formatName";
+    my $formatName = $_[0] // croak "!ERROR! enableFormat(...): requires name of format";   # Devel::Cover = not possible for croak to return 1
+    my $formatModule = $_[1] // "CAD::Mesh3D::$formatName";                                 # Devel::Cover = not possible for string on right to return 0
     (my $key = $formatModule . '.pm') =~ s{::}{/}g;
     eval { require $formatModule unless exists $INC{$key}; 1; } or do {
         local $" = ", ";
