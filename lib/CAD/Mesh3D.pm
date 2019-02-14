@@ -311,7 +311,7 @@ our %EnabledFormats = ();
 If you want to be able to output your mesh into a format, or input a mesh from a format, you need to enable them.
 This makes it simple to incorporate an add-on C<CAD::Mesh3D::NiftyFormat>.
 
-Note to developers: L<CAD::Mesh3D::AddAFormat> documents how to write a submodule (usually in the C<CAD::Mesh3D>
+Note to developers: L<CAD::Mesh3D::ProvideNewFormat> documents how to write a submodule (usually in the C<CAD::Mesh3D>
 namespace) to provide the appropriate input and/or output functions for a given format.  L<CAD::Mesh3D:STL> is a
 format that ships with B<CAD::Mesh3D>, and provides an example of how to implement a format module.
 
