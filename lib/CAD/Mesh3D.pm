@@ -346,6 +346,7 @@ Pass the name or coderef to these functions into L<enableFormat> to have the use
 sub inputFunctionNotAvail { croak sprintf "Input function for %s is not available", defined $_[0] ? shift : 'your format' }
 sub outputFunctionNotAvail { croak sprintf "Output function for %s is not available", defined $_[0] ? shift : 'your format' }
 
+use CAD::Mesh3D::STL qw/outputStl/;
 enableFormat( STL => 'CAD::Mesh3D', \&inputFunctionNotAvail, \&outputStl);
 
 ################################################################
@@ -376,55 +377,6 @@ or the case-insensitive text "ASCII" or "ASC" will select ASCII mode; a missing 
 C<$asc> argument, or a zero value or empty string, or the case-insensitive text "BINARY"
 or "BIN" will select BINARY mode; if the argument contains a string other than those mentioned,
 S<C<outputStl()>> will cause the script to die.
-
-=cut
-
-# outputStl(mesh, file, asc)
-sub outputStl {
-    # verify it's a valid mesh
-    my $mesh = shift;
-    for($mesh) { # TODO = error handling
-    }   # /check_mesh
-
-    # process the filehandle / filename
-    my $doClose = 0;    # don't close the filehandle when done, unless it's a filename
-    my $fh = my $fn = shift;
-    for($fh) {
-        croak sprintf('!ERROR! outputStl(mesh, fh, opt): requires file handle or name') unless $_;
-        $_ = \*STDOUT if /^STDOUT$/i;
-        $_ = \*STDERR if /^STDERR$/i;
-        if( 'GLOB' ne ref $_ ) {
-            $fn .= '.stl' unless $fn =~ /\.stl$/i;
-            open my $tfh, '>', $fn or croak sprintf('!ERROR! outputStl(): cannot write to "%s": %s', $fn, $!);
-            $_ = $tfh;
-            $doClose++; # will need to close the file
-        }
-    }   # /check_fh
-
-    # determine whether it's ASCII or binary
-    my $asc = shift || 0;   check_asc: for($asc) {
-        $_ = 1 if /^(?:ASC(?:|II)|true)$/i;
-        $_ = 0 if /^(?:bin(?:|ary)|false)$/i;
-        croak sprintf('!ERROR! outputStl(): unknown asc/bin switch "%s"', $_) if $_ && /\D/;
-    }   # /check_asc
-    binmode $fh unless $asc;
-
-    #############################################################################################
-    # use CAD::Format::STL to output the STL
-    #############################################################################################
-    my $stl = CAD::Format::STL->new;
-    my $part = $stl->add_part("my part", @$mesh);
-
-    if($asc) {
-        $stl->save( ascii => $fh );
-    } else {
-        $stl->save( binary => $fh );
-    }
-
-    # close the file, if outputStl() is where the handle was opened (ie, not on existing fh, STDERR, or STDOUT)
-    close($fh) if $doClose;
-    return;
-}
 
 =head1 SEE ALSO
 
