@@ -332,8 +332,8 @@ C<$moduleName> should be the name of the module.  It will default to 'CAD::Mesh3
 =cut
 
 sub enableFormat {
-    my $formatName = $_[0] // croak "!ERROR! enableFormat(...): requires name of format";   # Devel::Cover = not possible for croak to return 1
-    my $formatModule = $_[1] // "CAD::Mesh3D::$formatName";                                 # Devel::Cover = not possible for string on right to return 0
+    my $formatName = defined $_[0] ? $_[0] : croak "!ERROR! enableFormat(...): requires name of format";
+    my $formatModule = defined $_[1] ? $_[1] : "CAD::Mesh3D::$formatName";
     (my $key = $formatModule . '.pm') =~ s{::}{/}g;
     eval { require $formatModule unless exists $INC{$key}; 1; } or do {
         local $" = ", ";
