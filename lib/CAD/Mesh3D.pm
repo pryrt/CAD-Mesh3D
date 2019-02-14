@@ -308,26 +308,20 @@ our %EnabledFormats = ();
 
 =head2 ENABLED FORMATS
 
-If you want to have output and/or input formats specified, you need to enable them.
-This makes it simple to incorporate an add-on C<CAD::Mesh3D::NiftyFormat>
+If you want to be able to output your mesh into a format, or input a mesh from a format, you need to enable them.
+This makes it simple to incorporate an add-on C<CAD::Mesh3D::NiftyFormat>.
 
-Eventually, L<CAD::Mesh3D::AddAFormat> will document how to write a submodule (usually in the C<CAD::Mesh3D> namespace) to provide the appropriate input and/or output functions for a given format.
+Note to developers: L<CAD::Mesh3D::AddAFormat> documents how to write a submodule (usually in the C<CAD::Mesh3D>
+namespace) to provide the appropriate input and/or output functions for a given format.  L<CAD::Mesh3D:STL> is a
+format that ships with B<CAD::Mesh3D>, and provides an example of how to implement a format module.
 
 =head3 enableFormat
 
-    use CAD::Mesh3D qw/:formats/;
     enableFormat( $format )
-    enableFormat( $format => $moduleName, $inputFunc, $outputFunc )
-    enableFormat( $format => $moduleName, \&Module::Name::inputFunc, \\&Module::Name::outputFunc )
+    enableFormat( $format => $moduleName  )
 
-C<$moduleName> should be the name of the module.  It will default to 'CAD::Mesh3D::$format'.
-
-        Either define C<$inputFunc> as the name of a function (provided by $moduleName), or  C<\&Module::Name::inputFunc> as the (fully-qualified) coderef to a function.  Either way, the function should expect arguments C<...> (as described in L<CAD::Mesh3D::AddAFormat>), and should process a specified file into a valid C<CAD::Mesh3D> data structure, which it returns.  If the format type does not have an input function (for example, a PNG format cannot be reasonably expected to be converted back into a 3D object with appropriate coordinates and facets), you can use C<\&inputFunctionNotAvail>.
-
-        Similarly, define C<$outputFunc> as the name of a function or C<\&Module::Name::inputFunc> as the (fully-qualified) coderef to a function, where the function should expect arguments C<...> (as described in L<CAD::Mesh3D::AddAFormat>) and convert the C<CAD::Mesh3D> data into a valid file for the selected 3D format.  Again, if the format type does not have an output function (for example, some rare format may have a licensing fee to write to that format, but be free to read and interpret, so the developer is providing a read-only format), then you can use C<\&outputFunctionNotAvail>.
-
-        !!!BZZT!!! TODO: Rework this = I realized that it would be better for each C<CAD::Mesh3D::...> format to implement its own initialization, which will set the input and output functions appropriately; save the end user from having to muck about with coderefs and the like.
-
+C<$moduleName> should be the name of the module that will provide the C<$format> routines.  It will default to 'CAD::Mesh3D::$format'.
+The C<$format> is case-sensitive, so C<enableFormat( 'Stl' ); enableFormat( 'STL' );> will try to enable two separate formats.
 
 =cut
 
@@ -349,8 +343,8 @@ Pass the name or coderef to these functions into L<enableFormat> to have the use
 
 =cut
 
-sub inputFunctionNotAvail { croak "Input function for {} is not available" }
-sub outputFunctionNotAvail { croak "Output function for {} is not available" }
+sub inputFunctionNotAvail { croak sprintf "Input function for %s is not available", defined $_[0] ? shift : 'your format' }
+sub outputFunctionNotAvail { croak sprintf "Output function for %s is not available", defined $_[0] ? shift : 'your format' }
 
 enableFormat( STL => 'CAD::Mesh3D', \&inputFunctionNotAvail, \&outputStl);
 
@@ -457,15 +451,12 @@ scheme is wrong.
 
 =item * enableFormat( I<Format> )
 
-=item * enableFormat( I<Format> =E<gt> I<module>, 'I<inputFunc>', 'I<outputFunc>' )
+=item * enableFormat( I<Format> =E<gt> I<module> )
 
-=item * enableFormat( I<Format> =E<gt> I<module>, \&I<inputFunc>, \&I<outputFunc> )
-
-Require/import the sub-module.  Maybe also callable via the C<use CAD::Mesh3D qw/Format1 Format2/>.
+Require/import the sub-module.
 
     enableFormat( 'OBJ' );  # assumes CAD::Mesh3D::OBJ, input_obj() and output_obj()
-    enableFormat( 'PNG' => 'CAD::Mesh3D::Images', \&inputFunctionNotAvail, 'pngOutput'); # explicit about module name and outuput function name; use error function for input()
-    enableFormat( 'STL' => 'CAD::Mesh3D', \&CAD::Mesh3D::inputStl, , \&CAD::Mesh3D::outputStl); # this uses the coderef notation;
+    enableFormat( 'STL' => 'CAD::Mesh3D' ); # explcit about module name; this is is called internally for the default STL format
 
 I<Module> should be the name of the module.  It should default to
 'CAD::Mesh3D::I<Format>'.
@@ -506,6 +497,10 @@ Output the mesh to the appropriate format.
 Pass this to the C<enableFormat()> function
 
 =back
+
+=item Enable Format(s) in the C<use CAD::Mesh3D> statement
+
+    use CAD::Mesh3D @formats, qw/:all/;
 
 =back
 
