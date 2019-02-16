@@ -334,6 +334,12 @@ sub enableFormat {
         croak "!ERROR! enableFormat( @_ ): \n\tcould not import $formatModule\n\t";
     };
     carp sprintf "enableFormat(): STL EXPORT_OK = (%s)\n", join ',', @CAD::Mesh3D::STL::EXPORT_OK;
+    my %io = ();
+    #eval { no strict 'refs'; %io = %$formatModule::IOFUNCTIONS ; 1; } or do {
+    #    local $" = ", ";
+    #    croak "!ERROR! enableFormat( @_ ): \n\tcould not find %{${formatModule}::IOFUNCTIONS\n\t";
+    #};
+    # see https://subversion.assembla.com/svn/pryrt/trunk/perl/perlmonks/mesh3d-unasked-question-20190215.pl for workaround using function
 }
 
 =head3 inputFunctionNotAvail
