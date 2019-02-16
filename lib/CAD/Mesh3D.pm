@@ -332,7 +332,8 @@ sub enableFormat {
     eval { require $formatModule unless exists $INC{$key}; 1; } or do {
         local $" = ", ";
         croak "!ERROR! enableFormat( @_ ): \n\tcould not import $formatModule\n\t";
-    }
+    };
+    carp sprintf "enableFormat(): STL EXPORT_OK = (%s)\n", join ',', @CAD::Mesh3D::STL::EXPORT_OK;
 }
 
 =head3 inputFunctionNotAvail
