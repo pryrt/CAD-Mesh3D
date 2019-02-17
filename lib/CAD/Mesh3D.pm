@@ -347,6 +347,8 @@ sub enableFormat {
     # carp "STL input()  = $io{input}" if defined $io{input};
     # carp "STL output() = $io{output}" if defined $io{output};
     # see https://subversion.assembla.com/svn/pryrt/trunk/perl/perlmonks/mesh3d-unasked-question-20190215.pl for workaround using function
+
+    $EnabledFormats{$formatName} = { %io, module => $formatModule };
 }
 
 use CAD::Mesh3D::STL qw/outputStl/;

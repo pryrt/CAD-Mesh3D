@@ -5,9 +5,20 @@ use Test::More;
 
 use CAD::Mesh3D qw(:all);
 
+sub test_format {
+    my $format = shift;
+    my $module = shift;
+    ok(exists $CAD::Mesh3D::EnabledFormats{$format}, "EnabledFormats{$format}");
+    isa_ok( $CAD::Mesh3D::EnabledFormats{$format}{input}, 'CODE', "EnabledFormats{$format}{input}");
+    isa_ok( $CAD::Mesh3D::EnabledFormats{$format}{output}, 'CODE', "EnabledFormats{$format}{output}");
+    is( $CAD::Mesh3D::EnabledFormats{$format}{module}, $module, "EnabledFormats{$format}{module}");
+}
+
 ##################################################
 # enableFormat() functional coverage tests
 ##################################################
+test_format( 'STL', 'CAD::Mesh3D::STL' );
+# TODO: need to have a test of the expected-undefined functions...
 
 ##################################################
 # enableFormat(): missing input/output functions
@@ -15,12 +26,14 @@ use CAD::Mesh3D qw(:all);
 sub mockedFormat::MissingInput::_io_functions { output => sub { 'output' } }
 $INC{'mockedFormat/MissingInput.pm'} = 1;
 enableFormat( 'MissingInput' => 'mockedFormat::MissingInput' );
-ok(1, 'mockedFormat::MissingInput'); # TODO = figure out how to verify it worked
+test_format( 'MissingInput' => 'mockedFormat::MissingInput' );
+
+ok(exists $CAD::Mesh3D::EnabledFormats{MissingInput}, 'EnabledFormats{MissingInput}') or diag "\texplain: ", explain \%CAD::Mesh3D::EnabledFormats;
 
 sub mockedFormat::MissingOutput::_io_functions { input => sub { 'input' } }
 $INC{'mockedFormat/MissingOutput.pm'} = 1;
 enableFormat( 'MissingOutput' => 'mockedFormat::MissingOutput' );
-ok(1, 'mockedFormat::MissingOutput'); # TODO = figure out how to verify it worked
+test_format( 'MissingOutput' => 'mockedFormat::MissingOutput' );
 
 
 ##################################################
