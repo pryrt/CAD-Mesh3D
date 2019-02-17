@@ -325,6 +325,10 @@ The C<$format> is case-sensitive, so C<enableFormat( 'Stl' ); enableFormat( 'STL
 
 =cut
 
+#   Pass the name or coderef to these functions into L<enableFormat> to have the user's code exit with an appropriate error message if there is no appropriate input or output method for a given 3D format.
+our $_input_function_not_avail  = sub { croak sprintf "Input function for %s is not available", defined $_[0] ? shift : 'your format' };
+our $_output_function_not_avail = sub { croak sprintf "Output function for %s is not available", defined $_[0] ? shift : 'your format' };
+
 sub enableFormat {
     my $formatName = defined $_[0] ? $_[0] : croak "!ERROR! enableFormat(...): requires name of format";
     my $formatModule = defined $_[1] ? $_[1] : "CAD::Mesh3D::$formatName";
@@ -333,28 +337,20 @@ sub enableFormat {
         local $" = ", ";
         croak "!ERROR! enableFormat( @_ ): \n\tcould not import $formatModule\n\t";
     };
-    carp sprintf "enableFormat(): STL EXPORT_OK = (%s)\n", join ',', @CAD::Mesh3D::STL::EXPORT_OK;
     my %io = ();
-    #eval { no strict 'refs'; %io = %$formatModule::IOFUNCTIONS ; 1; } or do {
-    #    local $" = ", ";
-    #    croak "!ERROR! enableFormat( @_ ): \n\tcould not find %{${formatModule}::IOFUNCTIONS\n\t";
-    #};
+    eval { %io = $formatModule->_io_functions(); 1; } or do {
+        local $" = ", ";
+        croak "!ERROR! enableFormat( @_ ): \n\t$formatModule doesn't seem to correctly provide the input and/or output functions\n\t";
+    };
+    $io{input}  = $_input_function_not_avail  unless defined $io{input};
+    $io{output} = $_output_function_not_avail unless defined $io{output};
+    # carp "STL input()  = $io{input}" if defined $io{input};
+    # carp "STL output() = $io{output}" if defined $io{output};
     # see https://subversion.assembla.com/svn/pryrt/trunk/perl/perlmonks/mesh3d-unasked-question-20190215.pl for workaround using function
 }
 
-=head3 inputFunctionNotAvail
-
-=head3 outputFunctionNotAvail
-
-Pass the name or coderef to these functions into L<enableFormat> to have the user's code exit with an appropriate error message if there is no appropriate input or output method for a given 3D format.
-
-=cut
-
-sub inputFunctionNotAvail { croak sprintf "Input function for %s is not available", defined $_[0] ? shift : 'your format' }
-sub outputFunctionNotAvail { croak sprintf "Output function for %s is not available", defined $_[0] ? shift : 'your format' }
-
 use CAD::Mesh3D::STL qw/outputStl/;
-enableFormat( STL => 'CAD::Mesh3D', \&inputFunctionNotAvail, \&outputStl);
+enableFormat( 'STL' => 'CAD::Mesh3D::STL' );
 
 ################################################################
 # file output

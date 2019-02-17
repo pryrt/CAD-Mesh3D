@@ -49,9 +49,35 @@ our %EXPORT_TAGS = (
     all             => \@EXPORT_OK,
 );
 
+=head2 enableFormat
+
+L<CAD::Mesh3D> should automatically run C<enableFormat('STL')>, though
+the user can run it again, just to make sure.  This will tell C<CAD::Mesh3D>
+where to find the functions for C<output(STL =E<gt> $filename)>
+(and eventually C<input(STL =E<gt> $filename>).
+
+=cut
+
+################################################################
+# _io_functions():
+# CAD::Mesh3D::enableFormat('STL') calls CAD::Mesh3D::STL::_io_functions(),
+# and expects it to return a hash with coderefs the 'input'
+# and 'output' functions.  Use undef (or leave out the key/value entirely)
+# for a direction that doesn't exist.
+#   _io_functions { input => \&inputSTL, output => \&outputSTL }
+#   _io_functions { input => undef, output => \&outputSTL }
+#   _io_functions { output => \&outputSTL }
+#   _io_functions { input => sub { ... } }
+################################################################
+sub _io_functions {
+    return (
+        output => \&outputStl,
+        input => sub { croak sprintf "Sorry, %s's developer has not yet debugged inputting from STL", __PACKAGE__ },
+    );
+}
+
+
 our %IOFUNCTIONS = (
-    input => undef,
-    output => \&outputStl,
 );
 
 ################################################################
