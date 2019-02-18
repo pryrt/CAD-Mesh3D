@@ -59,6 +59,7 @@ use 5.010;
             'warnings' => 0,
             'strict' => 0,
             'Test::More' => 0.86,
+            'Test::Exception' => 0,
             'constant' => 0,
             'Config' => 0,
         },
@@ -68,6 +69,7 @@ use 5.010;
             'warnings' => 0,
             'strict' => 0,
             'Test::More' => 0.86,
+            'Test::Exception' => 0,
             'constant' => 0,
             'Config' => 0,
         };
