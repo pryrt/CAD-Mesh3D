@@ -1,7 +1,7 @@
 use 5.010;      # v5.8 equired for in-memory files; v5.10 required for named backreferences and // in the commented-note() calls
 use strict;
 use warnings;
-use Test::More;
+use Test::More tests => 21;
 use Test::Exception;
 
 use CAD::Mesh3D qw(:all);
@@ -25,7 +25,6 @@ sub test_format {
             unless exists $opt{output} and UNIVERSAL::isa($opt{output}, 'Regexp');
         throws_ok { $CAD::Mesh3D::EnabledFormats{$format}{output}->() } $opt{output}, "Error Handling: EnabledFormats{$format}{output} error-test";
     }
-    diag "-" x 25;
 }
 
 ##################################################
