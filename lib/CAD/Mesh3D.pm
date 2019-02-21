@@ -120,7 +120,7 @@ sub createFacet {
 
 =head4 createQuadrangleFacets
 
-  my @f = createQuadrangleFacets( $a, $b, $c, $d );
+ my @f = createQuadrangleFacets( $a, $b, $c, $d );
 
 Creates two B<Facet>s using the four B<Vertex> arguments as the corners of a quadrangle
 (like with C<createFacet>, the arguments are ordered by the right-hand rule).  This returns
@@ -141,10 +141,10 @@ sub createQuadrangleFacets {
 
 =head4 getz
 
-    my $v = createVertex(1,2,3);
-    my $x = getx($v); # 1
-    my $y = getx($v); # 2
-    my $z = getx($v); # 3
+ my $v = createVertex(1,2,3);
+ my $x = getx($v); # 1
+ my $y = getx($v); # 2
+ my $z = getx($v); # 3
 
 Grabs the individual x, y, or z coordinate from a vertex
 
@@ -317,8 +317,8 @@ format that ships with B<CAD::Mesh3D>, and provides an example of how to impleme
 
 =head3 enableFormat
 
-    enableFormat( $format )
-    enableFormat( $format => $moduleName  )
+ enableFormat( $format )
+ enableFormat( $format => $moduleName  )
 
 C<$moduleName> should be the name of the module that will provide the C<$format> routines.  It will default to 'CAD::Mesh3D::$format'.
 The C<$format> is case-sensitive, so C<enableFormat( 'Stl' ); enableFormat( 'STL' );> will try to enable two separate formats.
@@ -400,64 +400,15 @@ scheme is wrong.
 
 =over
 
-=item * Input from STL
+=item * Enable Format(s) in the C<use CAD::Mesh3D> statement
 
-=item * Plug-and-Play
+ use CAD::Mesh3D @formats, qw/:all/;
 
-=over
+=item * allow object-oriented notation
 
-=item * enableFormat( I<Format> )
+=item * convert all docs to C<output($mesh, 'STL' => ... )>, and make sure all the documentation agrees
 
-=item * enableFormat( I<Format> =E<gt> I<module> )
-
-Require/import the sub-module.
-
-    enableFormat( 'OBJ' );  # assumes CAD::Mesh3D::OBJ, input_obj() and output_obj()
-    enableFormat( 'STL' => 'CAD::Mesh3D' ); # explcit about module name; this is is called internally for the default STL format
-
-I<Module> should be the name of the module.  It should default to
-'CAD::Mesh3D::I<Format>'.
-
-I<inputFunc> should either be the name (relative to the given I<Module>) or a
-coderef of an appropriate function.  You can use C<\&inputFunctionNotAvail>
-to give an error message if someone tries to use an C<input()> call for a
-I<Format> that can only write out: for example, if you cannot take a PNG and
-come up with a reasonable Mesh3D, then you would want to give the user an error
-message.  If I<inputFunc> is missing or undefined, it will use the name of
-C<input_> followed by the lower case version I<Format>).
-
-I<outputFunc> should be either the name (relative to the given moduI<Module>le)
-or a coderef of an appropriate function.  You can use C<\&outputFunctionNotAvail>
-to give an error message if someone tries to use an C<output()> call for a
-I<Format> that can only read in: for example, if the license for some proprietary
-3D format will allow you to read without paying a fee, but you have to pay a fee
-to write that file type.
-
-
-        !!!BZZT!!! TODO: Rework this = I realized that it would be better for each C<CAD::Mesh3D::...> format to implement its own initialization, which will set the input and output functions appropriately; save the end user from having to muck about with coderefs and the like.
-
-
-=item * input( I<format>, I<file>, [I<options>])
-
-Inputs the mesh file given that format.
-
-Not all will have an input function (for example, cannot import a mesh from an image)
-
-=item * output( I<format>, I<file>, [I<options>])
-
-Output the mesh to the appropriate format.
-
-=item * \&inputFunctionNotAvail
-
-=item * \&outputFunctionNotAvail
-
-Pass this to the C<enableFormat()> function
-
-=back
-
-=item Enable Format(s) in the C<use CAD::Mesh3D> statement
-
-    use CAD::Mesh3D @formats, qw/:all/;
+=item * convert :output tag to :fileio tag
 
 =back
 

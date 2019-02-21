@@ -13,14 +13,14 @@ CAD::Mesh3D::STL - Used by CAD::Mesh3D to provide the STL output functionality
 
 =head1 SYNOPSIS
 
- use CAD::Mesh3D qw(:create :output);       # CAD::Mesh3D::STL is enabled by default with CAD::Mesh3D
- my $vect = createVertex();
+ use CAD::Mesh3D qw(STL :create :output);       # enable CAD::Mesh3D::STL, and import the :create and :output
+ my $v1 = createVertex(...);
+ ...
  my $tri  = createFacet($v1, $v2, $v3);
  my $mesh = createMesh();
  addToMesh($mesh, $tri);
- push @$mesh, $tri;               # manual method of addToMesh()
  ...
- outputStl($mesh, $filehandle_or_filename, $true_for_ascii_false_for_binary);
+ output($mesh, STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
 
 =head1 DESCRIPTION
 
@@ -95,7 +95,12 @@ They can be imported into your script I<en masse> using the C<:output> tag.
 
 =head3 outputStl
 
- outputStl($mesh, $file, $asc);
+    CAD::Mesh3D::STL::outputStl($mesh, $file, $asc);
+
+This should really be called using the C<CAD::Mesh3D/"output()"> wrapper
+
+    use CAD::Mesh3D qw/STL :output/;
+    output($mesh, STL => $file, $asc);
 
 Outputs the given C<$mesh> to the indicated file.
 
@@ -157,6 +162,14 @@ sub outputStl {
     close($fh) if $doClose;
     return;
 }
+
+=head1 TODO
+
+=over
+
+=item * inputSTL()
+
+=back
 
 =head1 AUTHOR
 
