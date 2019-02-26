@@ -13,7 +13,7 @@ CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D pri
 
 =head1 SYNOPSIS
 
- use CAD::Mesh3D qw(:create :output);
+ use CAD::Mesh3D qw(+STL :create :output);
  my $vect = createVertex();
  my $tri  = createFacet($v1, $v2, $v3);
  my $mesh = createMesh();
@@ -336,7 +336,10 @@ format that ships with B<CAD::Mesh3D>, and provides an example of how to impleme
 
 =head3 enableFormat
 
+ use CAD::Mesh3D qw/+STL :DEFAULT/;     # for the format 'STL'
+  # or
  enableFormat( $format )
+  # or
  enableFormat( $format => $moduleName  )
 
 C<$moduleName> should be the name of the module that will provide the C<$format> routines.  It will default to 'CAD::Mesh3D::$format'.
@@ -416,13 +419,11 @@ scheme is wrong.
 
 =over
 
-=item * Enable Format(s) in the C<use CAD::Mesh3D> statement
-
- use CAD::Mesh3D @formats, qw/:all/;
-
-=item * allow object-oriented notation
+=item * create C<output($mesh, 'STL' => ... )> and C<input($mesh, 'STL' => ... )> ...
 
 =item * convert all docs to C<output($mesh, 'STL' => ... )>, and make sure all the documentation agrees
+
+=item * allow object-oriented notation
 
 =item * convert :output tag to :fileio tag
 
