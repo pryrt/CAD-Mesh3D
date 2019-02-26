@@ -5,6 +5,8 @@ use Test::More tests => 21;
 use Test::Exception;
 
 use CAD::Mesh3D qw(:all);
+use CAD::Mesh3D::STL ();
+enableFormat('STL');
 
 sub test_format {
     my $format = shift;

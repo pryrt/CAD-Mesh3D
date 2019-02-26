@@ -38,14 +38,15 @@ floating-point values to represent the position in 3D space.
 # Exports
 ################################################################
 
-use Exporter 5.57 'import';     # v5.57 needed for getting import() without @ISA
+use Exporter 5.57 ();     # v5.57 needed for getting import() without @ISA         # use Exporter 5.57 'import';
+our @ISA = qw/Exporter/;
 our @EXPORT_CREATE  = qw(createVertex createFacet createQuadrangleFacets createMesh addToMesh);
 our @EXPORT_VERTEX  = qw(createVertex getx gety getz);
 our @EXPORT_MATH    = qw(unitDelta unitCross facetNormal);
-our @EXPORT_FORMATS = qw(enableFormat inputFunctionNotAvail outputFunctionNotAvail);
+our @EXPORT_FORMATS = qw(enableFormat);
 our @EXPORT_OUTPUT  = qw(outputStl);
 our @EXPORT_OK      = (@EXPORT_CREATE, @EXPORT_MATH, @EXPORT_OUTPUT, @EXPORT_FORMATS, @EXPORT_VERTEX);
-our @EXPORT         = @EXPORT_OK;
+our @EXPORT         = @EXPORT_FORMATS;
 our %EXPORT_TAGS = (
     create          => \@EXPORT_CREATE,
     vertex          => \@EXPORT_VERTEX,
@@ -54,6 +55,22 @@ our %EXPORT_TAGS = (
     output          => \@EXPORT_OUTPUT,
     all             => \@EXPORT_OK,
 );
+
+sub import
+{
+    my @passthru;
+
+    # pass most arguments thru, but if it starts with +, then try to enable that format
+    foreach (@_) {
+        if( /^\+/ ) {
+            s/^\+//;
+            enableFormat($_);
+            next;
+        }
+        push @passthru, $_;
+    }
+    CAD::Mesh3D->export_to_level(1, @passthru);
+}
 
 ################################################################
 # "object" creation
@@ -335,7 +352,7 @@ sub enableFormat {
     (my $key = $formatModule . '.pm') =~ s{::}{/}g;
     eval { require $formatModule unless exists $INC{$key}; 1; } or do {
         local $" = ", ";
-        croak "!ERROR! enableFormat( @_ ): \n\tcould not import $formatModule\n\t";
+        croak "!ERROR! enableFormat( @_ ): \n\tcould not import $formatModule\n\t$@";
     };
     my %io = ();
     eval { %io = $formatModule->_io_functions(); 1; } or do {
@@ -350,9 +367,6 @@ sub enableFormat {
 
     $EnabledFormats{$formatName} = { %io, module => $formatModule };
 }
-
-use CAD::Mesh3D::STL qw/outputStl/;
-enableFormat( 'STL' => 'CAD::Mesh3D::STL' );
 
 ################################################################
 # file output

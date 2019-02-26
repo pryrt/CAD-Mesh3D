@@ -4,6 +4,8 @@ use Test::More tests => 48;
 use Test::Exception;
 
 use CAD::Mesh3D qw(:all);
+use CAD::Mesh3D::STL qw(outputStl);
+
 
 ################################################################
 # error handling

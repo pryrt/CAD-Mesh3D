@@ -4,6 +4,7 @@ use warnings;
 use Test::More tests => 5 + 5*28 + 3;
 
 use CAD::Mesh3D qw(:all);
+use CAD::Mesh3D::STL qw(outputStl);
 
 my $lft = createVertex(0,0,0);
 my $rgt = createVertex(1,0,0);
