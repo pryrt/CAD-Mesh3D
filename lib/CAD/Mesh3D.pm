@@ -58,16 +58,18 @@ our %EXPORT_TAGS = (
 
 sub import
 {
+    my @list = @_;
     my @passthru;
 
     # pass most arguments thru, but if it starts with +, then try to enable that format
-    foreach (@_) {
-        if( /^\+/ ) {
-            s/^\+//;
-            enableFormat($_);
+    foreach my $arg (@list) {
+        next unless defined $arg;
+        if( $arg =~ /^\+/ ) {
+            $arg =~ s/^\+//;
+            enableFormat($arg);
             next;
         }
-        push @passthru, $_;
+        push @passthru, $arg;
     }
     CAD::Mesh3D->export_to_level(1, @passthru);
 }
@@ -350,7 +352,7 @@ sub enableFormat {
     my $formatName = defined $_[0] ? $_[0] : croak "!ERROR! enableFormat(...): requires name of format";
     my $formatModule = defined $_[1] ? $_[1] : "CAD::Mesh3D::$formatName";
     (my $key = $formatModule . '.pm') =~ s{::}{/}g;
-    eval { require $formatModule unless exists $INC{$key}; 1; } or do {
+    eval { require $key unless exists $INC{$key}; 1; } or do {
         local $" = ", ";
         croak "!ERROR! enableFormat( @_ ): \n\tcould not import $formatModule\n\t$@";
     };
