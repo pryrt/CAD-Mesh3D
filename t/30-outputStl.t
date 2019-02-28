@@ -1,10 +1,9 @@
 use 5.010;      # v5.8 equired for in-memory files; v5.10 required for named backreferences and // in the commented-note() calls
 use strict;
 use warnings;
-use Test::More tests => 5 + 5*28 + 3;
+use Test::More tests => 5 + 5*28 + 3 + 3;
 
 use CAD::Mesh3D qw(+STL :all);
-use CAD::Mesh3D::STL qw(outputStl);
 
 my $lft = createVertex(0,0,0);
 my $rgt = createVertex(1,0,0);
@@ -114,7 +113,7 @@ sub test_ascii {
 foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     my $memory = '';
     open my $fh, '>', \$memory or die "in-memory handle failed: $!";
-    outputStl($mesh, $fh, $asc);
+    output($mesh, STL => $fh, $asc);
     close($fh);
     my $expected;
     my $is_ascii = 0;
@@ -137,11 +136,11 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     }
     if($is_ascii) {       # ascii
         chomp $memory;
-        test_ascii( $memory, $exp_ascii_aref, sprintf 'outputStl(mesh, fh, "%s")', defined $asc ? $asc : '<undef>' );
+        test_ascii( $memory, $exp_ascii_aref, sprintf 'output(mesh, STL => fh, "%s")', defined $asc ? $asc : '<undef>' );
     } else {                # binary (unpack to a string, then compare to regex)
         $memory = unpack 'H*', $memory;
         $expected = $expected_ubin;
-        like( $memory, $expected, sprintf 'outputStl(mesh, fh, "%s"): binary file matches', defined $asc ? $asc : '<undef>');
+        like( $memory, $expected, sprintf 'output(mesh, STL => fh, "%s"): binary file matches', defined $asc ? $asc : '<undef>');
     }
     #note sprintf "MEMORY[%8.8s] = '%s'\n", defined $asc ? $asc : '<undef>', $memory;
 }
@@ -173,7 +172,7 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     open my $fh_err, '>&', \*STDERR or die "cannot dup STDERR: $!";
     close STDERR; open STDERR, '>', \$memerr or die "cannot open in-memory STDERR: $!";
 
-    outputStl($mesh, $_, $_ eq $f2) for 'STDOUT', 'STDERR', $f1, $f2; # use ascii for f2
+    output($mesh, STL => $_, $_ eq $f2) for 'STDOUT', 'STDERR', $f1, $f2; # use ascii for f2
 
     close STDERR; open STDERR, '>&', $fh_err;
     close STDOUT; open STDOUT, '>&', $fh_out;
@@ -201,11 +200,23 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
         $ret;
     };
 
-    like( $memout, $expected_ubin,  'outputStl(mesh, STDOUT > memfile, binary): binary file matches' );
-    like( $memerr, $expected_ubin,  'outputStl(mesh, STDERR > memfile, binary): binary file matches' );
-    like( $slurp1, $expected_ubin,  sprintf 'outputStl(mesh, "%s", binary): binary file matches', $f1 );
-    test_ascii( $slurp2, $exp_ascii_aref, sprintf 'outputStl(mesh, "%s", ascii)', $f2 );
+    like( $memout, $expected_ubin,  'output(mesh, STL => STDOUT > memfile, binary): binary file matches' );
+    like( $memerr, $expected_ubin,  'output(mesh, STL => STDERR > memfile, binary): binary file matches' );
+    like( $slurp1, $expected_ubin,  sprintf 'output(mesh, STL => "%s", binary): binary file matches', $f1 );
+    test_ascii( $slurp2, $exp_ascii_aref, sprintf 'output(mesh, STL => "%s", ascii)', $f2 );
 
 }
+
+###### fault handling ######
+use Test::Exception;
+
+# output(): missing fh
+throws_ok { output($mesh, 'STL') } qr/output.*: requires file handle or name/, 'Error Handling: output(missing fh)';
+
+# output(): cannot write to fh
+throws_ok { output($mesh, STL => '/path/does/not/exist') } qr/output.*: cannot write to.*No such file or directory/, 'Error Handling: output(missing fh)';
+
+# output(): non-recognized $ascii argument
+throws_ok { output($mesh, STL => \*STDERR, 'bad') } qr/output.*: unknown asc\/bin switch "bad"/, 'Error Handling: output(bad ascii switch)';
 
 done_testing();

@@ -1,10 +1,9 @@
 use strict;
 use warnings;
-use Test::More tests => 48;
+use Test::More tests => 45;
 use Test::Exception;
 
 use CAD::Mesh3D qw(+STL :all);
-use CAD::Mesh3D::STL qw(outputStl);
 
 ################################################################
 # error handling
@@ -56,7 +55,7 @@ throws_ok { createMesh( [[1..4], [0,0,0], [1,1,1]] ); } qr/createMesh.*each Vert
 throws_ok { createMesh( [[1,2,3], 2, [1,1,1]] ); } qr/createMesh.*each Vertex must be an array ref or equivalent object; you supplied a scalar"2"/, 'Error Handling: createMesh(second Vertex invalid)';
 throws_ok { createMesh( [[1,2,3], [0,0,0], 3] ); } qr/createMesh.*each Vertex must be an array ref or equivalent object; you supplied a scalar"3"/, 'Error Handling: createMesh(third  Vertex invalid)';
 
-# will need a valid mesh for the remaining outputStl tests
+# will need a valid mesh for the remaining output tests
 my $lft = [sqrt( 0/12),sqrt(0/12),sqrt(0/12)];
 my $rgt = [sqrt(12/12),sqrt(0/12),sqrt(0/12)];
 my $mid = [sqrt( 3/12),sqrt(9/12),sqrt(0/12)];
@@ -73,14 +72,5 @@ throws_ok { addToMesh( $mesh, [$lft, $top, undef] ); } qr/addToMesh.*: each Vert
 throws_ok { addToMesh( $mesh, [$lft, 7, $mid] ); } qr/addToMesh.*: each Vertex must be an array ref or equivalent object; you supplied a scalar "7"/, 'Error Handling: addToMesh(mesh, [left, scalar, middle]): one vertex scalar';
 throws_ok { addToMesh( $mesh, [$lft, $top, {}] ); } qr/addToMesh.*: each Vertex must be an array ref or equivalent object; you supplied "HASH"/, 'Error Handling: addToMesh(mesh, [left, top, {}]): one vertex wrong reference type';
 throws_ok { addToMesh( $mesh, [[], $top, $mid] ); } qr/addToMesh.*: each Vertex in each triangle requires 3 coordinates; you supplied 0/, 'Error Handling: addToMesh(mesh, [[], top, mid]): one vertex empty';
-
-# outputStl(): missing fh
-throws_ok { outputStl($mesh) } qr/outputStl.*: requires file handle or name/, 'Error Handling: outputStl(missing fh)';
-
-# outputStl(): cannot write to fh
-throws_ok { outputStl($mesh, '/path/does/not/exist') } qr/outputStl.*: cannot write to.*No such file or directory/, 'Error Handling: outputStl(missing fh)';
-
-# outputStl(): non-recognized $ascii argument
-throws_ok { outputStl($mesh, \*STDERR, 'bad') } qr/outputStl.*: unknown asc\/bin switch "bad"/, 'Error Handling: outputStl(bad ascii switch)';
 
 done_testing();

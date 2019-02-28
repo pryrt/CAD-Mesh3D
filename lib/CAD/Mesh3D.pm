@@ -43,16 +43,14 @@ our @ISA = qw/Exporter/;
 our @EXPORT_CREATE  = qw(createVertex createFacet createQuadrangleFacets createMesh addToMesh);
 our @EXPORT_VERTEX  = qw(createVertex getx gety getz);
 our @EXPORT_MATH    = qw(unitDelta unitCross facetNormal);
-our @EXPORT_FORMATS = qw(enableFormat);
-our @EXPORT_OUTPUT  = qw(outputStl);
-our @EXPORT_OK      = (@EXPORT_CREATE, @EXPORT_MATH, @EXPORT_OUTPUT, @EXPORT_FORMATS, @EXPORT_VERTEX);
+our @EXPORT_FORMATS = qw(enableFormat output input);
+our @EXPORT_OK      = (@EXPORT_CREATE, @EXPORT_MATH, @EXPORT_FORMATS, @EXPORT_VERTEX);
 our @EXPORT         = @EXPORT_FORMATS;
 our %EXPORT_TAGS = (
     create          => \@EXPORT_CREATE,
     vertex          => \@EXPORT_VERTEX,
     math            => \@EXPORT_MATH,
     formats         => \@EXPORT_FORMATS,
-    output          => \@EXPORT_OUTPUT,
     all             => \@EXPORT_OK,
 );
 
@@ -325,7 +323,7 @@ sub facetNormal($) {
 ################################################################
 our %EnabledFormats = ();
 
-=head2 ENABLED FORMATS
+=head2 FORMATS
 
 If you want to be able to output your mesh into a format, or input a mesh from a format, you need to enable them.
 This makes it simple to incorporate an add-on C<CAD::Mesh3D::NiftyFormat>.
@@ -334,9 +332,11 @@ Note to developers: L<CAD::Mesh3D::ProvideNewFormat> documents how to write a su
 namespace) to provide the appropriate input and/or output functions for a given format.  L<CAD::Mesh3D:STL> is a
 format that ships with B<CAD::Mesh3D>, and provides an example of how to implement a format module.
 
+The C<enableFormat>, C<output>, and C<input> functions can be imported using the C<:formats> tag.
+
 =head3 enableFormat
 
- use CAD::Mesh3D qw/+STL :DEFAULT/;     # for the format 'STL'
+ use CAD::Mesh3D qw/+STL :formats/;     # for the format 'STL'
   # or
  enableFormat( $format )
   # or
@@ -377,18 +377,13 @@ sub enableFormat {
 # file output
 ################################################################
 
-=head2 FILE OUTPUT
-
-The following function will output the B<Mesh> to a 3D output file.
-Currently, only STL is supported.
-
-They can be imported into your script I<en masse> using the C<:output> tag.
-
-=cut
-
 =head3 outputStl
 
- outputStl($mesh, $file, $asc);
+Output the B<Mesh> to a 3D output file in the given format
+
+ use CAD::Mesh3D qw/+STL :formats/;
+ output($mesh, 'STL' => $file);
+ output($mesh, 'STL' => $file, @args );
 
 Outputs the given C<$mesh> to the indicated file.
 
@@ -396,11 +391,16 @@ The C<$file> argument is either an already-opened filehandle, or the name of the
 (if the full path is not specified, it will default to your script's directory),
 or "STDOUT" or "STDERR" to direct the output to the standard handles.
 
-The C<$asc> argument determines whether to use STL's ASCII mode: a non-zero numeric value,
-or the case-insensitive text "ASCII" or "ASC" will select ASCII mode; a missing or undefined
-C<$asc> argument, or a zero value or empty string, or the case-insensitive text "BINARY"
-or "BIN" will select BINARY mode; if the argument contains a string other than those mentioned,
-S<C<outputStl()>> will cause the script to die.
+You will need to look at the documentation for your selected format to see what additional
+C<@args> it might want.  Often, the args will be used for setting format options, like
+picking between ASCII and binary file formats, or similar.
+
+=cut
+
+sub output {
+    my ($mesh, $format, @file_and_args) = @_;
+    $EnabledFormats{$format}{output}->( $mesh, @file_and_args );
+}
 
 =head1 SEE ALSO
 
