@@ -13,7 +13,7 @@ CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D pri
 
 =head1 SYNOPSIS
 
- use CAD::Mesh3D qw(+STL :create :output);
+ use CAD::Mesh3D qw(+STL :create :formats);
  my $vect = createVertex();
  my $tri  = createFacet($v1, $v2, $v3);
  my $mesh = createMesh();
@@ -445,8 +445,6 @@ scheme is wrong.
 =over
 
 =item * allow object-oriented notation
-
-=item * convert :output tag to :fileio tag
 
 =back
 

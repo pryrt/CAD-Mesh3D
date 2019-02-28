@@ -4,7 +4,7 @@ CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D pri
 
 # SYNOPSIS
 
-    use CAD::Mesh3D qw(+STL :create :output);
+    use CAD::Mesh3D qw(+STL :create :formats);
     my $vect = createVertex();
     my $tri  = createFacet($v1, $v2, $v3);
     my $mesh = createMesh();
@@ -35,7 +35,6 @@ floating-point values to represent the position in 3D space.
 # TODO
 
 - allow object-oriented notation
-- convert :output tag to :fileio tag
 
 # AUTHOR
 

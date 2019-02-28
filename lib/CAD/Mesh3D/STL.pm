@@ -9,11 +9,11 @@ our $VERSION = 0.001_011;
 
 =head1 NAME
 
-CAD::Mesh3D::STL - Used by CAD::Mesh3D to provide the STL output functionality
+CAD::Mesh3D::STL - Used by CAD::Mesh3D to provide the STL format-specific functionality
 
 =head1 SYNOPSIS
 
- use CAD::Mesh3D qw(STL :create :output);       # enable CAD::Mesh3D::STL, and import the :create and :output
+ use CAD::Mesh3D qw(STL :create :formats);       # enable CAD::Mesh3D::STL, and import the :create and :formats tags
  my $v1 = createVertex(...);
  ...
  my $tri  = createFacet($v1, $v2, $v3);
@@ -24,13 +24,12 @@ CAD::Mesh3D::STL - Used by CAD::Mesh3D to provide the STL output functionality
 
 =head1 DESCRIPTION
 
-A framework to create and manipulate 3D vertices and meshes, suitable for generating STL files
-(or other similar formats) for 3D printing.
+This module is used by L<CAD::Mesh3D> to provide the STL format-specific functionality, including
+saving B<Mesh>es as STL files, or loading a B<Mesh>es from STL files.
 
-A B<Mesh> is the container for the surface of the shape or object being generated.  The surface is broken down
-into locally-flat pieces known as B<Facet>s.  Each Facet is a triangle made from exactly points, called
-B<Vertex>es or vertices.  Each Vertex is made up of three x, y, and z B<coordinate>s, which are just
-floating-point values to represent the position in 3D space.
+L<STL|https://en.wikipedia.org/wiki/STL_(file_format)> ("stereolithography") files are a CAD format used as inputs in the 3D printing process.
+
+The module supports either ASCII (plain-text) or binary (encoded) STL files.
 
 =cut
 
@@ -39,22 +38,23 @@ floating-point values to represent the position in 3D space.
 ################################################################
 
 use Exporter 5.57 'import';     # v5.57 needed for getting import() without @ISA
-our @EXPORT_OUTPUT  = qw(outputStl);
-our @EXPORT_INPUT   = qw();
-our @EXPORT_OK      = (@EXPORT_OUTPUT, @EXPORT_INPUT);
+our @EXPORT_OK      = ();
 our @EXPORT         = ();
 our %EXPORT_TAGS = (
-    output          => \@EXPORT_OUTPUT,
-    input           => \@EXPORT_INPUT,
     all             => \@EXPORT_OK,
 );
 
 =head2 enableFormat
 
-L<CAD::Mesh3D> should automatically run C<enableFormat('STL')>, though
-the user can run it again, just to make sure.  This will tell C<CAD::Mesh3D>
-where to find the functions for C<output(STL =E<gt> $filename)>
-(and eventually C<input(STL =E<gt> $filename>).
+You need to tell L<CAD::Mesh3D> where to find this STL module.  You can
+either specify C<+STL> when you C<use CAD::Mesh3D>:
+
+ use CAD::Mesh3D qw(+STL :create :formats);
+
+Or you can independently enable the STL format sometime later:
+
+ use CAD::Mesh3D qw(:create :formats);
+ enableFormat( 'STL' );
 
 =cut
 
@@ -76,35 +76,29 @@ sub _io_functions {
     );
 }
 
-
-our %IOFUNCTIONS = (
-);
-
 ################################################################
 # file output
 ################################################################
 
 =head2 FILE OUTPUT
 
-The following function will output the B<Mesh> to a 3D output file.
-Currently, only STL is supported.
-
-They can be imported into your script I<en masse> using the C<:output> tag.
-
-=cut
-
 =head3 output
 
 =head3 outputStl
 
-    CAD::Mesh3D::STL::outputStl($mesh, $file, $asc);
+To output your B<Mesh> using the STL format, you should use CAD::Mesh3D's C<output()>
+wrapper function, which is included in the C<:formats> import tag.
 
-This should really be called using the C<CAD::Mesh3D/"output()"> wrapper
+ use CAD::Mesh3D qw/+STL :formats/;
+ output($mesh, STL => $file, $asc);
 
-    use CAD::Mesh3D qw/+STL :output/;
-    output($mesh, STL => $file, $asc);
+The wrapper will call the C<CAD::Mesh3D::STL::outputStl()> function internally, but
+makes it easy to keep your code compatible with other 3d-file formats.
 
-Outputs the given C<$mesh> to the indicated file.
+If you insist on calling the STL function directly, it is possible, but not
+recommended, to call
+
+ CAD::Mesh3D::STL::outputStl($mesh, $file, $asc);
 
 The C<$file> argument is either an already-opened filehandle, or the name of the file
 (if the full path is not specified, it will default to your script's directory),
@@ -165,11 +159,48 @@ sub outputStl {
     return;
 }
 
+=head2 FILE INPUT
+
+=head3 input
+
+=head3 inputStl
+
+NOT YET IMPLEMENTED
+
+To input your B<Mesh> from an STL file, you should use L<CAD::Mesh3D>'s C<input()> wrapper function,
+which is included in the C<:formats> import tag.
+
+ use CAD::Mesh3D qw/+STL :formats/;
+ my $mesh = input(STL => $file, $asc);
+
+The wrapper will call the C<CAD::Mesh3D::STL::inputStl()> function internally, but makes it easy to
+keep your code compatible with other 3d-file formats.
+
+If you insist on calling the STL function directly, it is possible, but not recommended, to call
+
+ my $mesh = CAD::Mesh3D::STL::inputStl($file, $asc);
+
+The C<$file> argument is either an already-opened filehandle, or the name of the file
+(if the full path is not specified, it will default to your script's directory),
+or "STDIN" to receive the input from the standard input handle.
+
+The C<$asc> argument determines whether to use STL's ASCII mode: a non-zero numeric value,
+or the case-insensitive text "ASCII" or "ASC" will select ASCII mode; a missing or undefined
+C<$asc> argument, or a zero value or empty string, or the case-insensitive text "BINARY"
+or "BIN" will select BINARY mode; if the argument contains a string other than those mentioned,
+S<C<inputStl()>> will cause the script to die.
+
+=cut
+
+sub inputStl {
+    croak __PACKAGE__, "::inputStl(): not yet implemented, sorry.";
+}
+
 =head1 TODO
 
 =over
 
-=item * inputSTL()
+=item * implement inputSTL()
 
 =back
 
