@@ -347,8 +347,8 @@ The C<$format> is case-sensitive, so C<enableFormat( 'Stl' ); enableFormat( 'STL
 =cut
 
 #   Pass the name or coderef to these functions into L<enableFormat> to have the user's code exit with an appropriate error message if there is no appropriate input or output method for a given 3D format.
-our $_input_function_not_avail  = sub { croak sprintf "Input function for %s is not available", defined $_[0] ? shift : 'your format' };
-our $_output_function_not_avail = sub { croak sprintf "Output function for %s is not available", defined $_[0] ? shift : 'your format' };
+our $_input_function_not_avail  = sub { croak sprintf "Input function for %s is not available", defined($_[0]) ? $_[0] : 'your format' };
+our $_output_function_not_avail = sub { croak sprintf "Output function for %s is not available", defined($_[0]) ? $_[0] : 'your format' };
 
 sub enableFormat {
     my $formatName = defined $_[0] ? $_[0] : croak "!ERROR! enableFormat(...): requires name of format";
@@ -394,11 +394,41 @@ You will need to look at the documentation for your selected format to see what 
 C<@args> it might want.  Often, the args will be used for setting format options, like
 picking between ASCII and binary file formats, or similar.
 
+You also may need to whether your chosen format even supports file output; it is possible
+that some do not.  (For example, some formats may have a binary structure that is free
+to read, but requires paying a license to write.)
+
 =cut
 
 sub output {
     my ($mesh, $format, @file_and_args) = @_;
     $EnabledFormats{$format}{output}->( $mesh, @file_and_args );
+}
+
+=head3 input
+
+ use CAD::Mesh3D qw/+STL :formats/;
+ my $mesh = input( 'STL' => $file, @args );
+
+Creates a B<Mesh> by reading the given file using the specified format.
+
+The C<$file> argument is either an already-opened filehandle, or the name of the file
+(if the full path is not specified, it will default to your script's directory),
+or "STDIN" to grab the input from the standard input handle.
+
+You will need to look at the documentation for your selected format to see what additional
+C<@args> it might want.  Often, the args will be used for setting format options, like
+picking between ASCII and binary file formats, or similar.
+
+You also may need to whether your chosen format even supports file input; it is possible
+that some do not.  (For example, some formats, like a PNG image, may not contain the
+necessary 3d information to create a mesh.)
+
+=cut
+
+sub input {
+    my ($format, @file_and_args) = @_;
+    $EnabledFormats{$format}{input}->( @file_and_args );
 }
 
 =head1 SEE ALSO
