@@ -61,7 +61,6 @@ sub import
 
     # pass most arguments thru, but if it starts with +, then try to enable that format
     foreach my $arg (@list) {
-        next unless defined $arg;
         if( $arg =~ /^\+/ ) {
             $arg =~ s/^\+//;
             enableFormat($arg);
