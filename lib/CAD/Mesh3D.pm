@@ -444,8 +444,6 @@ scheme is wrong.
 
 =over
 
-=item * create C<input($mesh, 'STL' => ... )> ...
-
 =item * allow object-oriented notation
 
 =item * convert :output tag to :fileio tag

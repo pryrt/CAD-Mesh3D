@@ -34,7 +34,6 @@ floating-point values to represent the position in 3D space.
 
 # TODO
 
-- create `input($mesh, 'STL' =` ... )> ...
 - allow object-oriented notation
 - convert :output tag to :fileio tag
 
