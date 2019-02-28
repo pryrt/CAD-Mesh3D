@@ -93,13 +93,15 @@ They can be imported into your script I<en masse> using the C<:output> tag.
 
 =cut
 
+=head3 output
+
 =head3 outputStl
 
     CAD::Mesh3D::STL::outputStl($mesh, $file, $asc);
 
 This should really be called using the C<CAD::Mesh3D/"output()"> wrapper
 
-    use CAD::Mesh3D qw/STL :output/;
+    use CAD::Mesh3D qw/+STL :output/;
     output($mesh, STL => $file, $asc);
 
 Outputs the given C<$mesh> to the indicated file.

@@ -20,7 +20,7 @@ CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D pri
  addToMesh($mesh, $tri);
  push @$mesh, $tri;               # manual method of addToMesh()
  ...
- outputStl($mesh, $filehandle_or_filename, $true_for_ascii_false_for_binary);
+ output($mesh, STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
 
 =head1 DESCRIPTION
 
@@ -376,7 +376,7 @@ sub enableFormat {
 # file output
 ################################################################
 
-=head3 outputStl
+=head3 output
 
 Output the B<Mesh> to a 3D output file in the given format
 
@@ -418,9 +418,7 @@ scheme is wrong.
 
 =over
 
-=item * create C<output($mesh, 'STL' => ... )> and C<input($mesh, 'STL' => ... )> ...
-
-=item * convert all docs to C<output($mesh, 'STL' => ... )>, and make sure all the documentation agrees
+=item * create C<input($mesh, 'STL' => ... )> ...
 
 =item * allow object-oriented notation
 
