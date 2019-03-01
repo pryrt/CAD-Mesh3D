@@ -303,6 +303,8 @@ sub unitCross($$) {
 =head3 facetNormal
 
  my $uN = facetNormal( $facet );
+ # or
+ my $uN = $facet->normal();
 
 Uses S<C<unitDelta()>> and  S<C<unitCross()>> to find the normal-vector
 for the given B<Facet>, given the right-hand rule order for the B<Facet>'s
@@ -310,14 +312,19 @@ vertices.
 
 =cut
 
-sub facetNormal($) {
+sub CAD::Mesh3D::Facet::normal($) {
     # TODO = argument checking
     my ($A,$B,$C) = @{ shift() };   # three vertices of the facet
     my $uAB = unitDelta( $A, $B );
     my $uBC = unitDelta( $B, $C );
     return    unitCross( $uAB, $uBC );
 }
-*CAD::Mesh3D::Facet::facetNormal = \&facetNormal;
+
+sub facetNormal {
+    # this is the exportable wrapper at the Mesh3D level
+    shift if UNIVERSAL::isa($_[0], 'CAD::Mesh3D');      # if this was called $mesh->facetNormal($facet), throw away the mesh
+    CAD::Mesh3D::Facet::normal($_[0])
+}
 
 ################################################################
 # enabled formats
@@ -450,12 +457,12 @@ scheme is wrong.
 
  x bless the the outputs of createVertex, createFacet, createMesh
  x show that addToMesh will work as function or method
- - the :math functions (almost) all work on vertexes, so createVertex
-   and the math should all be moved to a separate namespace;
-   then Mesh3D would need to be able to export the ::Vertex math functions
-   * Hmm, if I just defined the subs as belonging to sub-namespace,
-     would I still be able to export them from this package?
- - facetNormal actually works on ::Facet, not on ::Vertex
+ - the :math functions work on ::Vertex or ::Facet, so the math
+   could all be moved to methods in the appropriate separate namespace;
+   each would also need a wrapper in the ::Mesh3D namespace, to be exported
+   x facetNormal / ::Facet::normal
+   _ unitCross / ::Vertex::unitCross
+   _ unitDelta / ::Vertex::unitDelta
 
 
 =back
