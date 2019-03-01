@@ -23,15 +23,6 @@ into locally-flat pieces known as **Facet**s.  Each Facet is a triangle made fro
 **Vertex**es or vertices.  Each Vertex is made up of three x, y, and z **coordinate**s, which are just
 floating-point values to represent the position in 3D space.
 
-# SEE ALSO
-
-- [CAD::Format::STL](https://metacpan.org/pod/CAD::Format::STL) - includes both input and output from STL (ASCII and BINARY)
-
-    The unaddressed Windows bug was killer for me.  I possibly would have offered
-    to co-maintain and implement the bug fix, but I also wanted the possibility
-    of adding sub-modules to implment other input/output formats -- in which case, the naming
-    scheme is wrong.
-
 # TODO
 
 - allow object-oriented notation
