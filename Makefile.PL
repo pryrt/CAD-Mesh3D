@@ -59,6 +59,7 @@ use 5.010;
             'warnings' => 0,
             'strict' => 0,
             'Test::More' => 0.86,
+            'Test::Exception' => 0,
             'constant' => 0,
             'Config' => 0,
         },
@@ -68,6 +69,7 @@ use 5.010;
             'warnings' => 0,
             'strict' => 0,
             'Test::More' => 0.86,
+            'Test::Exception' => 0,
             'constant' => 0,
             'Config' => 0,
         };
@@ -103,7 +105,7 @@ realclean ::
 
 # auto-generate the README from the lib/CAD/Mesh3D.pm
 README.md :: lib/CAD/Mesh3D.pm Makefile.PL
-	$(PERL) -MPod::Simple::Select -e 'my $$p = Pod::Simple::Select->new();$$p->output_file(qq(README.pod));$$p->select({head1 => [qq(NAME),qq(SYNOPSIS),qq(DESCRIPTION),qq(SEE ALSO),qq(TODO),qq(AUTHOR),qq(COPYRIGHT),qq(LICENSE)]});$$p->parse_file(qq(lib/CAD/Mesh3D.pm));'
+	$(PERL) -MPod::Simple::Select -e 'my $$p = Pod::Simple::Select->new();$$p->output_file(qq(README.pod));$$p->select({head1 => [qq(NAME),qq(SYNOPSIS),qq(DESCRIPTION),qq(TODO),qq(AUTHOR),qq(COPYRIGHT),qq(LICENSE)]});$$p->parse_file(qq(lib/CAD/Mesh3D.pm));'
 	pod2markdown README.pod README.md
 	$(RM_F) README.pod
 

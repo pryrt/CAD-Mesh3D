@@ -13,14 +13,14 @@ CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D pri
 
 =head1 SYNOPSIS
 
- use CAD::Mesh3D qw(:create :output);
+ use CAD::Mesh3D qw(+STL :create :formats);
  my $vect = createVertex();
  my $tri  = createFacet($v1, $v2, $v3);
  my $mesh = createMesh();
  addToMesh($mesh, $tri);
  push @$mesh, $tri;               # manual method of addToMesh()
  ...
- outputStl($mesh, $filehandle_or_filename, $true_for_ascii_false_for_binary);
+ $mesh->output(STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
 
 =head1 DESCRIPTION
 
@@ -38,22 +38,38 @@ floating-point values to represent the position in 3D space.
 # Exports
 ################################################################
 
-use Exporter 5.57 'import';     # v5.57 needed for getting import() without @ISA
+use Exporter 5.57 ();     # v5.57 was needed for getting import() without @ISA (# use Exporter 5.57 'import';)
+our @ISA = qw/Exporter/;
 our @EXPORT_CREATE  = qw(createVertex createFacet createQuadrangleFacets createMesh addToMesh);
 our @EXPORT_VERTEX  = qw(createVertex getx gety getz);
-our @EXPORT_MATH    = qw(unitDelta unitCross facetNormal);
-our @EXPORT_FORMATS = qw(enableFormat inputFunctionNotAvail outputFunctionNotAvail);
-our @EXPORT_OUTPUT  = qw(outputStl);
-our @EXPORT_OK      = (@EXPORT_CREATE, @EXPORT_MATH, @EXPORT_OUTPUT, @EXPORT_FORMATS, @EXPORT_VERTEX);
-our @EXPORT         = @EXPORT_OK;
+our @EXPORT_MATH    = qw(unitDelta unitCross unitNormal facetNormal);
+our @EXPORT_FORMATS = qw(enableFormat output input);
+our @EXPORT_OK      = (@EXPORT_CREATE, @EXPORT_MATH, @EXPORT_FORMATS, @EXPORT_VERTEX);
+our @EXPORT         = @EXPORT_FORMATS;
 our %EXPORT_TAGS = (
     create          => \@EXPORT_CREATE,
     vertex          => \@EXPORT_VERTEX,
     math            => \@EXPORT_MATH,
     formats         => \@EXPORT_FORMATS,
-    output          => \@EXPORT_OUTPUT,
     all             => \@EXPORT_OK,
 );
+
+sub import
+{
+    my @list = @_;
+    my @passthru;
+
+    # pass most arguments thru, but if it starts with +, then try to enable that format
+    foreach my $arg (@list) {
+        if( $arg =~ /^\+/ ) {
+            $arg =~ s/^\+//;
+            enableFormat($arg);
+            next;
+        }
+        push @passthru, $arg;
+    }
+    CAD::Mesh3D->export_to_level(1, @passthru);
+}
 
 ################################################################
 # "object" creation
@@ -82,10 +98,11 @@ to represent the x, y, and z coordinates in 3D space.
 
 =cut
 
+@CAD::Mesh3D::Vertex::ISA = qw/Math::Vector::Real/;
 sub createVertex {
     croak sprintf("!ERROR! createVertex(x,y,z): requires 3 coordinates; you supplied %d", scalar @_)
         unless 3==@_;
-    return V(@_);
+    return bless V(@_), 'CAD::Mesh3D::Vertex';
 }
 
 =head3 createFacet
@@ -115,12 +132,12 @@ sub createFacet {
         croak sprintf("!ERROR! createFacet(t1,t2,t3): each Vertex requires 3 coordinates; you supplied %d: <%s>", scalar @$v, join(",", @$v))
             unless 3==@$v;
     }
-    return [@_[0..2]];
+    return bless [@_[0..2]], __PACKAGE__."::Facet";
 }
 
 =head4 createQuadrangleFacets
 
-  my @f = createQuadrangleFacets( $a, $b, $c, $d );
+ my @f = createQuadrangleFacets( $a, $b, $c, $d );
 
 Creates two B<Facet>s using the four B<Vertex> arguments as the corners of a quadrangle
 (like with C<createFacet>, the arguments are ordered by the right-hand rule).  This returns
@@ -141,10 +158,10 @@ sub createQuadrangleFacets {
 
 =head4 getz
 
-    my $v = createVertex(1,2,3);
-    my $x = getx($v); # 1
-    my $y = getx($v); # 2
-    my $z = getx($v); # 3
+ my $v = createVertex(1,2,3);
+ my $x = getx($v); # 1
+ my $y = getx($v); # 2
+ my $z = getx($v); # 3
 
 Grabs the individual x, y, or z coordinate from a vertex
 
@@ -182,7 +199,7 @@ sub createMesh {
                 unless 3==@$v;
         }
     }
-    return [@_];
+    return bless [@_];
 }
 
 =head4 addToMesh
@@ -236,6 +253,8 @@ They can be imported into your script I<en masse> using the C<:math> tag.
 =head3 unitDelta
 
  my $uAB = unitDelta( $A, $B );
+ # or
+ my $uAB = $A->unitDelta($B);
 
 Returns a vector (using same structure as a B<Vertex>), which gives the
 direction from B<Vertex A> to B<Vertex B>.  This is scaled so that
@@ -243,7 +262,7 @@ the vector has a magnitude of 1.0.
 
 =cut
 
-sub unitDelta($$) {
+sub CAD::Mesh3D::Vertex::unitDelta {
     # TODO = argument checking
     my ($beg, $end) = @_;
     my $dx = $end->[XCOORD] - $beg->[XCOORD];
@@ -253,9 +272,17 @@ sub unitDelta($$) {
     return $m ? [ $dx/$m, $dy/$m, $dz/$m ] : [0,0,0];
 }
 
+sub unitDelta {
+    # this is the exportable wrapper at the Mesh3D level
+    croak "usage: unitDelta( \$vertexA, \$vertexB)" if UNIVERSAL::isa($_[0], 'CAD::Mesh3D');      # don't allow method calls on ::Mesh3D objects: ie, die on $m->unitDelta($A,$B)
+    CAD::Mesh3D::Vertex::unitDelta(@_)
+}
+
 =head3 unitCross
 
  my $uN = unitCross( $uAB, $uBC );
+ # or
+ my $uN  = $uAB->unitCross($uBC);
 
 Returns the cross product for the two vectors, which gives a vector
 perpendicular to both.  This is scaled so that the vector has a
@@ -273,7 +300,7 @@ to C; the C<unitCross> of those two deltas gives you the normal-vector
 
 =cut
 
-sub unitCross($$) {
+sub CAD::Mesh3D::Vertex::unitCross {
     # TODO = argument checking
     my ($v1, $v2) = @_; # two vectors
     my $dx = $v1->[1]*$v2->[2] - $v1->[2]*$v2->[1];
@@ -283,9 +310,21 @@ sub unitCross($$) {
     return $m ? [ $dx/$m, $dy/$m, $dz/$m ] : [0,0,0];
 }
 
+sub unitCross {
+    # this is the exportable wrapper at the Mesh3D level
+    croak "usage: unitCross( \$vertexA, \$vertexB)" if UNIVERSAL::isa($_[0], 'CAD::Mesh3D');      # don't allow method calls on ::Mesh3D objects: ie, die on $m->unitCross($A,$B)
+    CAD::Mesh3D::Vertex::unitCross(@_)
+}
+
 =head3 facetNormal
 
+=head2 unitNormal
+
  my $uN = facetNormal( $facet );
+ # or
+ my $uN = $facet->normal();
+ # or
+ my $uN = unitNormal( $vertex1, $vertex2, $vertex3 )
 
 Uses S<C<unitDelta()>> and  S<C<unitCross()>> to find the normal-vector
 for the given B<Facet>, given the right-hand rule order for the B<Facet>'s
@@ -293,7 +332,7 @@ vertices.
 
 =cut
 
-sub facetNormal($) {
+sub CAD::Mesh3D::Facet::normal($) {
     # TODO = argument checking
     my ($A,$B,$C) = @{ shift() };   # three vertices of the facet
     my $uAB = unitDelta( $A, $B );
@@ -301,24 +340,41 @@ sub facetNormal($) {
     return    unitCross( $uAB, $uBC );
 }
 
+sub facetNormal {
+    # this is the exportable wrapper at the Mesh3D level
+    croak "usage: facetNormal( \$facetF )" if UNIVERSAL::isa($_[0], 'CAD::Mesh3D');      # don't allow method calls on ::Mesh3D objects: ie, die on $m->facetNormal($F)
+    CAD::Mesh3D::Facet::normal($_[0])
+}
+
+sub unitNormal {
+    # this is the exportable wrapper at the Mesh3D level
+    croak "usage: unitNormal( \$vertexA, \$vertexB, \$vertexC )" if UNIVERSAL::isa($_[0], 'CAD::Mesh3D');      # don't allow method calls on ::Mesh3D objects: ie, die on $m->unitNormal(@$F)
+    CAD::Mesh3D::Facet::normal( createFacet(@_) )
+}
+
 ################################################################
 # enabled formats
 ################################################################
 our %EnabledFormats = ();
 
-=head2 ENABLED FORMATS
+=head2 FORMATS
 
 If you want to be able to output your mesh into a format, or input a mesh from a format, you need to enable them.
 This makes it simple to incorporate an add-on C<CAD::Mesh3D::NiftyFormat>.
 
-Note to developers: L<CAD::Mesh3D::AddAFormat> documents how to write a submodule (usually in the C<CAD::Mesh3D>
+Note to developers: L<CAD::Mesh3D::ProvideNewFormat> documents how to write a submodule (usually in the C<CAD::Mesh3D>
 namespace) to provide the appropriate input and/or output functions for a given format.  L<CAD::Mesh3D:STL> is a
 format that ships with B<CAD::Mesh3D>, and provides an example of how to implement a format module.
 
+The C<enableFormat>, C<output>, and C<input> functions can be imported using the C<:formats> tag.
+
 =head3 enableFormat
 
-    enableFormat( $format )
-    enableFormat( $format => $moduleName  )
+ use CAD::Mesh3D qw/+STL :formats/;     # for the format 'STL'
+  # or
+ enableFormat( $format )
+  # or
+ enableFormat( $format => $moduleName  )
 
 C<$moduleName> should be the name of the module that will provide the C<$format> routines.  It will default to 'CAD::Mesh3D::$format'.
 The C<$format> is case-sensitive, so C<enableFormat( 'Stl' ); enableFormat( 'STL' );> will try to enable two separate formats.
@@ -329,41 +385,35 @@ sub enableFormat {
     my $formatName = defined $_[0] ? $_[0] : croak "!ERROR! enableFormat(...): requires name of format";
     my $formatModule = defined $_[1] ? $_[1] : "CAD::Mesh3D::$formatName";
     (my $key = $formatModule . '.pm') =~ s{::}{/}g;
-    eval { require $formatModule unless exists $INC{$key}; 1; } or do {
+    eval { require $key unless exists $INC{$key}; 1; } or do {
         local $" = ", ";
-        croak "!ERROR! enableFormat( @_ ): \n\tcould not import $formatModule\n\t";
-    }
+        croak "!ERROR! enableFormat( @_ ): \n\tcould not import $formatModule\n\t$@";
+    };
+    my %io = ();
+    eval { %io = $formatModule->_io_functions(); 1; } or do {
+        local $" = ", ";
+        croak "!ERROR! enableFormat( @_ ): \n\t$formatModule doesn't seem to correctly provide the input and/or output functions\n\t";
+    };
+    $io{input}  = sub { croak "Input function for $formatName is not available" } unless defined $io{input};
+    $io{output} = sub { croak "Output function for $formatName is not available" } unless defined $io{output};
+    # carp "STL input()  = $io{input}" if defined $io{input};
+    # carp "STL output() = $io{output}" if defined $io{output};
+    # see https://subversion.assembla.com/svn/pryrt/trunk/perl/perlmonks/mesh3d-unasked-question-20190215.pl for workaround using function
+
+    $EnabledFormats{$formatName} = { %io, module => $formatModule };
 }
-
-=head3 inputFunctionNotAvail
-
-=head3 outputFunctionNotAvail
-
-Pass the name or coderef to these functions into L<enableFormat> to have the user's code exit with an appropriate error message if there is no appropriate input or output method for a given 3D format.
-
-=cut
-
-sub inputFunctionNotAvail { croak sprintf "Input function for %s is not available", defined $_[0] ? shift : 'your format' }
-sub outputFunctionNotAvail { croak sprintf "Output function for %s is not available", defined $_[0] ? shift : 'your format' }
-
-enableFormat( STL => 'CAD::Mesh3D', \&inputFunctionNotAvail, \&outputStl);
 
 ################################################################
 # file output
 ################################################################
 
-=head2 FILE OUTPUT
+=head3 output
 
-The following function will output the B<Mesh> to a 3D output file.
-Currently, only STL is supported.
+Output the B<Mesh> to a 3D output file in the given format
 
-They can be imported into your script I<en masse> using the C<:output> tag.
-
-=cut
-
-=head3 outputStl
-
- outputStl($mesh, $file, $asc);
+ use CAD::Mesh3D qw/+STL :formats/;
+ $mesh->output('STL' => $file);
+ $mesh->output('STL' => $file, @args );
 
 Outputs the given C<$mesh> to the indicated file.
 
@@ -371,59 +421,45 @@ The C<$file> argument is either an already-opened filehandle, or the name of the
 (if the full path is not specified, it will default to your script's directory),
 or "STDOUT" or "STDERR" to direct the output to the standard handles.
 
-The C<$asc> argument determines whether to use STL's ASCII mode: a non-zero numeric value,
-or the case-insensitive text "ASCII" or "ASC" will select ASCII mode; a missing or undefined
-C<$asc> argument, or a zero value or empty string, or the case-insensitive text "BINARY"
-or "BIN" will select BINARY mode; if the argument contains a string other than those mentioned,
-S<C<outputStl()>> will cause the script to die.
+You will need to look at the documentation for your selected format to see what additional
+C<@args> it might want.  Often, the args will be used for setting format options, like
+picking between ASCII and binary file formats, or similar.
+
+You also may need to whether your chosen format even supports file output; it is possible
+that some do not.  (For example, some formats may have a binary structure that is free
+to read, but requires paying a license to write.)
 
 =cut
 
-# outputStl(mesh, file, asc)
-sub outputStl {
-    # verify it's a valid mesh
-    my $mesh = shift;
-    for($mesh) { # TODO = error handling
-    }   # /check_mesh
+sub output {
+    my ($mesh, $format, @file_and_args) = @_;
+    $EnabledFormats{$format}{output}->( $mesh, @file_and_args );
+}
 
-    # process the filehandle / filename
-    my $doClose = 0;    # don't close the filehandle when done, unless it's a filename
-    my $fh = my $fn = shift;
-    for($fh) {
-        croak sprintf('!ERROR! outputStl(mesh, fh, opt): requires file handle or name') unless $_;
-        $_ = \*STDOUT if /^STDOUT$/i;
-        $_ = \*STDERR if /^STDERR$/i;
-        if( 'GLOB' ne ref $_ ) {
-            $fn .= '.stl' unless $fn =~ /\.stl$/i;
-            open my $tfh, '>', $fn or croak sprintf('!ERROR! outputStl(): cannot write to "%s": %s', $fn, $!);
-            $_ = $tfh;
-            $doClose++; # will need to close the file
-        }
-    }   # /check_fh
+=head3 input
 
-    # determine whether it's ASCII or binary
-    my $asc = shift || 0;   check_asc: for($asc) {
-        $_ = 1 if /^(?:ASC(?:|II)|true)$/i;
-        $_ = 0 if /^(?:bin(?:|ary)|false)$/i;
-        croak sprintf('!ERROR! outputStl(): unknown asc/bin switch "%s"', $_) if $_ && /\D/;
-    }   # /check_asc
-    binmode $fh unless $asc;
+ use CAD::Mesh3D qw/+STL :formats/;
+ my $mesh = input( 'STL' => $file, @args );
 
-    #############################################################################################
-    # use CAD::Format::STL to output the STL
-    #############################################################################################
-    my $stl = CAD::Format::STL->new;
-    my $part = $stl->add_part("my part", @$mesh);
+Creates a B<Mesh> by reading the given file using the specified format.
 
-    if($asc) {
-        $stl->save( ascii => $fh );
-    } else {
-        $stl->save( binary => $fh );
-    }
+The C<$file> argument is either an already-opened filehandle, or the name of the file
+(if the full path is not specified, it will default to your script's directory),
+or "STDIN" to grab the input from the standard input handle.
 
-    # close the file, if outputStl() is where the handle was opened (ie, not on existing fh, STDERR, or STDOUT)
-    close($fh) if $doClose;
-    return;
+You will need to look at the documentation for your selected format to see what additional
+C<@args> it might want.  Often, the args will be used for setting format options, like
+picking between ASCII and binary file formats, or similar.
+
+You also may need to whether your chosen format even supports file input; it is possible
+that some do not.  (For example, some formats, like a PNG image, may not contain the
+necessary 3d information to create a mesh.)
+
+=cut
+
+sub input {
+    my ($format, @file_and_args) = @_;
+    $EnabledFormats{$format}{input}->( @file_and_args );
 }
 
 =head1 SEE ALSO
@@ -443,64 +479,12 @@ scheme is wrong.
 
 =over
 
-=item * Input from STL
+=item * allow object-oriented notation
 
-=item * Plug-and-Play
-
-=over
-
-=item * enableFormat( I<Format> )
-
-=item * enableFormat( I<Format> =E<gt> I<module> )
-
-Require/import the sub-module.
-
-    enableFormat( 'OBJ' );  # assumes CAD::Mesh3D::OBJ, input_obj() and output_obj()
-    enableFormat( 'STL' => 'CAD::Mesh3D' ); # explcit about module name; this is is called internally for the default STL format
-
-I<Module> should be the name of the module.  It should default to
-'CAD::Mesh3D::I<Format>'.
-
-I<inputFunc> should either be the name (relative to the given I<Module>) or a
-coderef of an appropriate function.  You can use C<\&inputFunctionNotAvail>
-to give an error message if someone tries to use an C<input()> call for a
-I<Format> that can only write out: for example, if you cannot take a PNG and
-come up with a reasonable Mesh3D, then you would want to give the user an error
-message.  If I<inputFunc> is missing or undefined, it will use the name of
-C<input_> followed by the lower case version I<Format>).
-
-I<outputFunc> should be either the name (relative to the given moduI<Module>le)
-or a coderef of an appropriate function.  You can use C<\&outputFunctionNotAvail>
-to give an error message if someone tries to use an C<output()> call for a
-I<Format> that can only read in: for example, if the license for some proprietary
-3D format will allow you to read without paying a fee, but you have to pay a fee
-to write that file type.
-
-
-        !!!BZZT!!! TODO: Rework this = I realized that it would be better for each C<CAD::Mesh3D::...> format to implement its own initialization, which will set the input and output functions appropriately; save the end user from having to muck about with coderefs and the like.
-
-
-=item * input( I<format>, I<file>, [I<options>])
-
-Inputs the mesh file given that format.
-
-Not all will have an input function (for example, cannot import a mesh from an image)
-
-=item * output( I<format>, I<file>, [I<options>])
-
-Output the mesh to the appropriate format.
-
-=item * \&inputFunctionNotAvail
-
-=item * \&outputFunctionNotAvail
-
-Pass this to the C<enableFormat()> function
-
-=back
-
-=item Enable Format(s) in the C<use CAD::Mesh3D> statement
-
-    use CAD::Mesh3D @formats, qw/:all/;
+ x cover mesh->output() notation
+ _ should I allow mesh->input?
+    - if so, does that mean that %$mesh = %{ input(STL=>$file) }?
+    - or does $mesh remain unchanged, returning a new, separate mesh object?
 
 =back
 
