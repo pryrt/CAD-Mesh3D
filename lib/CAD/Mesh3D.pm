@@ -447,6 +447,16 @@ scheme is wrong.
 
 =item * allow object-oriented notation
 
+ x bless the the outputs of createVertex, createFacet, createMesh
+ x show that addToMesh will work as function or method
+ - the :math functions (almost) all work on vertexes, so createVertex
+   and the math should all be moved to a separate namespace;
+   then Mesh3D would need to be able to export the ::Vertex math functions
+   * Hmm, if I just defined the subs as belonging to sub-namespace,
+     would I still be able to export them from this package?
+ - facetNormal actually works on ::Facet, not on ::Vertex
+
+
 =back
 
 =head1 AUTHOR

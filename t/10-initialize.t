@@ -50,7 +50,8 @@ is_deeply( $m->[2], $q2, 'createMesh(): mesh.facet-2 == q2');
 my $v456 = createVertex(4,5,6);
 my $q3 = createFacet($v111, $v123, $v456);
 my $q4 = createFacet($v123, $v111, $v456);
-addToMesh($m, $q3, $q4);
+addToMesh($m, $q3);     # functional
+$m->addToMesh($q4);     # object-oriented
 is( scalar @$m, 5, 'addToMesh(): mesh should have 5 elements now');
 is_deeply( $m->[0],  $t, 'addToMesh(): mesh.facet-0 == t');
 is_deeply( $m->[1], $q1, 'addToMesh(): mesh.facet-1 == q1');
