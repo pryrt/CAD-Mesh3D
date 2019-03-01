@@ -9,6 +9,7 @@ use CAD::Mesh3D ':all';
 # valid initialization
 ################################################################
 my $v123 = createVertex(1,2,3);
+isa_ok( $v123, 'CAD::Mesh3D::Vertex', 'createVertex(1,2,3)' );
 isa_ok( $v123, 'Math::Vector::Real', 'createVertex(1,2,3)' );
 is_deeply( [@$v123], [1,2,3], 'createVertex(1,2,3)') or diag "\texplain: ", explain $v123;
 is( getx($v123), 1, '[1,2,3]->getx()');
@@ -18,6 +19,7 @@ is( getz($v123), 3, '[1,2,3]->getz()');
 my $v000 = createVertex(0,0,0);
 my $v111 = createVertex(1,1,1);
 my $t = createFacet($v123, $v000, $v111);
+isa_ok( $t, 'CAD::Mesh3D::Facet', 'createFacet([1,2,3], [0,0,0], [1,1,1])' );
 isa_ok( $t, 'ARRAY', 'createFacet([1,2,3], [0,0,0], [1,1,1])' );
 is_deeply( $t->[0], $v123, 'createFacet([1,2,3], [0,0,0], [1,1,1]) vertex-0' ) or diag "\texplain: ", explain $t;
 is_deeply( $t->[1], $v000, 'createFacet([1,2,3], [0,0,0], [1,1,1]) vertex-1' ) or diag "\texplain: ", explain $t;
@@ -34,6 +36,7 @@ is_deeply( $q2->[1], $v123, 'createQuadrangleFacet([0,0,0], [1,1,1], [1,2,3], [-
 is_deeply( $q2->[2], $vN1N, 'createQuadrangleFacet([0,0,0], [1,1,1], [1,2,3], [-1,1,-1]): facet-2 vertex-2') or diag "\texplain second: ", explain $q2;
 
 my $m = createMesh();
+isa_ok( $m, 'CAD::Mesh3D', 'createMesh()' );
 isa_ok( $m, 'ARRAY', 'createMesh()' );
 is_deeply( $m, [], 'empty mesh initialization');
 

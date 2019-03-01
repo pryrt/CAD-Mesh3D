@@ -38,7 +38,7 @@ floating-point values to represent the position in 3D space.
 # Exports
 ################################################################
 
-use Exporter 5.57 ();     # v5.57 needed for getting import() without @ISA         # use Exporter 5.57 'import';
+use Exporter 5.57 ();     # v5.57 was needed for getting import() without @ISA (# use Exporter 5.57 'import';)
 our @ISA = qw/Exporter/;
 our @EXPORT_CREATE  = qw(createVertex createFacet createQuadrangleFacets createMesh addToMesh);
 our @EXPORT_VERTEX  = qw(createVertex getx gety getz);
@@ -98,10 +98,11 @@ to represent the x, y, and z coordinates in 3D space.
 
 =cut
 
+@CAD::Mesh3D::Vertex::ISA = qw/Math::Vector::Real/;
 sub createVertex {
     croak sprintf("!ERROR! createVertex(x,y,z): requires 3 coordinates; you supplied %d", scalar @_)
         unless 3==@_;
-    return V(@_);
+    return bless V(@_), 'CAD::Mesh3D::Vertex';
 }
 
 =head3 createFacet
@@ -131,7 +132,7 @@ sub createFacet {
         croak sprintf("!ERROR! createFacet(t1,t2,t3): each Vertex requires 3 coordinates; you supplied %d: <%s>", scalar @$v, join(",", @$v))
             unless 3==@$v;
     }
-    return [@_[0..2]];
+    return bless [@_[0..2]], __PACKAGE__."::Facet";
 }
 
 =head4 createQuadrangleFacets
@@ -198,7 +199,7 @@ sub createMesh {
                 unless 3==@$v;
         }
     }
-    return [@_];
+    return bless [@_];
 }
 
 =head4 addToMesh
