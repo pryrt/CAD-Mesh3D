@@ -22,6 +22,6 @@ my $top = [sqrt( 3/12),sqrt(1/12),sqrt(8/12)];
 is_deeply( facetNormal( [$lft, $mid, $rgt] ), [+sqrt(0/9),+sqrt(0/9),-sqrt(9/9)], 'facetNormal(bottom)' );
 is_deeply( facetNormal( [$lft, $rgt, $top] ), [+sqrt(0/9),-sqrt(8/9),+sqrt(1/9)], 'facetNormal(front )' );
 is_deeply( facetNormal( [$rgt, $mid, $top] ), [+sqrt(6/9),+sqrt(2/9),+sqrt(1/9)], 'facetNormal(right )' );
-is_deeply( facetNormal( [$mid, $lft, $top] ), [-sqrt(6/9),+sqrt(2/9),+sqrt(1/9)], 'facetNormal(left  )' );
+is_deeply( bless([$mid, $lft, $top], 'CAD::Mesh3D::Facet')->facetNormal(), [-sqrt(6/9),+sqrt(2/9),+sqrt(1/9)], 'facetNormal(left  ); also verifies ::Facet oo-notation' );
 
 done_testing();

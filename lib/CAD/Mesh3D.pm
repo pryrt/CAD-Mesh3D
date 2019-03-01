@@ -317,6 +317,7 @@ sub facetNormal($) {
     my $uBC = unitDelta( $B, $C );
     return    unitCross( $uAB, $uBC );
 }
+*CAD::Mesh3D::Facet::facetNormal = \&facetNormal;
 
 ################################################################
 # enabled formats
