@@ -11,7 +11,7 @@ CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D pri
     addToMesh($mesh, $tri);
     push @$mesh, $tri;               # manual method of addToMesh()
     ...
-    output($mesh, STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
+    $mesh->output(STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
 
 # DESCRIPTION
 
@@ -27,12 +27,10 @@ floating-point values to represent the position in 3D space.
 
 - allow object-oriented notation
 
-        x bless the the outputs of createVertex, createFacet, createMesh
-        x show that addToMesh will work as function or method
-        x the :math functions work on ::Vertex or ::Facet, so the math
-          could all be moved to methods in the appropriate separate namespace
-        _ cover mesh->output() notation
-        _ not sure what to do with mesh->input, because that creates a new mesh
+        x cover mesh->output() notation
+        _ should I allow mesh->input?
+           - if so, does that mean that %$mesh = %{ input(STL=>$file) }?
+           - or does $mesh remain unchanged, returning a new, separate mesh object?
 
 # AUTHOR
 

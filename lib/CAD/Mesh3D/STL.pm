@@ -19,7 +19,7 @@ CAD::Mesh3D::STL - Used by CAD::Mesh3D to provide the STL format-specific functi
  my $mesh = createMesh();
  addToMesh($mesh, $tri);
  ...
- output($mesh, STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
+ $mesh->output(STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
 
 =head1 DESCRIPTION
 
@@ -86,9 +86,11 @@ sub _io_functions {
 =head3 outputStl
 
 To output your B<Mesh> using the STL format, you should use CAD::Mesh3D's C<output()>
-wrapper function, which is included in the C<:formats> import tag.
+wrapper method.  You can also call it as a function, which is included in the C<:formats> import tag.
 
  use CAD::Mesh3D qw/+STL :formats/;
+ $mesh->output(STL => $file, $asc);
+ # or
  output($mesh, STL => $file, $asc);
 
 The wrapper will call the C<CAD::Mesh3D::STL::outputStl()> function internally, but

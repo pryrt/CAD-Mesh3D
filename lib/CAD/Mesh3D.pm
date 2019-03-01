@@ -20,7 +20,7 @@ CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D pri
  addToMesh($mesh, $tri);
  push @$mesh, $tri;               # manual method of addToMesh()
  ...
- output($mesh, STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
+ $mesh->output(STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
 
 =head1 DESCRIPTION
 
@@ -412,8 +412,8 @@ sub enableFormat {
 Output the B<Mesh> to a 3D output file in the given format
 
  use CAD::Mesh3D qw/+STL :formats/;
- output($mesh, 'STL' => $file);
- output($mesh, 'STL' => $file, @args );
+ $mesh->output('STL' => $file);
+ $mesh->output('STL' => $file, @args );
 
 Outputs the given C<$mesh> to the indicated file.
 
@@ -481,12 +481,10 @@ scheme is wrong.
 
 =item * allow object-oriented notation
 
- x bless the the outputs of createVertex, createFacet, createMesh
- x show that addToMesh will work as function or method
- x the :math functions work on ::Vertex or ::Facet, so the math
-   could all be moved to methods in the appropriate separate namespace
- _ cover mesh->output() notation
- _ not sure what to do with mesh->input, because that creates a new mesh
+ x cover mesh->output() notation
+ _ should I allow mesh->input?
+    - if so, does that mean that %$mesh = %{ input(STL=>$file) }?
+    - or does $mesh remain unchanged, returning a new, separate mesh object?
 
 =back
 
