@@ -42,7 +42,7 @@ use Exporter 5.57 ();     # v5.57 was needed for getting import() without @ISA (
 our @ISA = qw/Exporter/;
 our @EXPORT_CREATE  = qw(createVertex createFacet createQuadrangleFacets createMesh addToMesh);
 our @EXPORT_VERTEX  = qw(createVertex getx gety getz);
-our @EXPORT_MATH    = qw(unitDelta unitCross facetNormal);
+our @EXPORT_MATH    = qw(unitDelta unitCross unitNormal facetNormal);
 our @EXPORT_FORMATS = qw(enableFormat output input);
 our @EXPORT_OK      = (@EXPORT_CREATE, @EXPORT_MATH, @EXPORT_FORMATS, @EXPORT_VERTEX);
 our @EXPORT         = @EXPORT_FORMATS;
@@ -253,6 +253,8 @@ They can be imported into your script I<en masse> using the C<:math> tag.
 =head3 unitDelta
 
  my $uAB = unitDelta( $A, $B );
+ # or
+ my $uAB = $A->unitDelta($B);
 
 Returns a vector (using same structure as a B<Vertex>), which gives the
 direction from B<Vertex A> to B<Vertex B>.  This is scaled so that
@@ -260,7 +262,7 @@ the vector has a magnitude of 1.0.
 
 =cut
 
-sub unitDelta($$) {
+sub CAD::Mesh3D::Vertex::unitDelta {
     # TODO = argument checking
     my ($beg, $end) = @_;
     my $dx = $end->[XCOORD] - $beg->[XCOORD];
@@ -270,9 +272,17 @@ sub unitDelta($$) {
     return $m ? [ $dx/$m, $dy/$m, $dz/$m ] : [0,0,0];
 }
 
+sub unitDelta {
+    # this is the exportable wrapper at the Mesh3D level
+    croak "usage: unitDelta( \$vertexA, \$vertexB)" if UNIVERSAL::isa($_[0], 'CAD::Mesh3D');      # don't allow method calls on ::Mesh3D objects: ie, die on $m->unitDelta($A,$B)
+    CAD::Mesh3D::Vertex::unitDelta(@_)
+}
+
 =head3 unitCross
 
  my $uN = unitCross( $uAB, $uBC );
+ # or
+ my $uN  = $uAB->unitCross($uBC);
 
 Returns the cross product for the two vectors, which gives a vector
 perpendicular to both.  This is scaled so that the vector has a
@@ -290,7 +300,7 @@ to C; the C<unitCross> of those two deltas gives you the normal-vector
 
 =cut
 
-sub unitCross($$) {
+sub CAD::Mesh3D::Vertex::unitCross {
     # TODO = argument checking
     my ($v1, $v2) = @_; # two vectors
     my $dx = $v1->[1]*$v2->[2] - $v1->[2]*$v2->[1];
@@ -300,11 +310,21 @@ sub unitCross($$) {
     return $m ? [ $dx/$m, $dy/$m, $dz/$m ] : [0,0,0];
 }
 
+sub unitCross {
+    # this is the exportable wrapper at the Mesh3D level
+    croak "usage: unitCross( \$vertexA, \$vertexB)" if UNIVERSAL::isa($_[0], 'CAD::Mesh3D');      # don't allow method calls on ::Mesh3D objects: ie, die on $m->unitCross($A,$B)
+    CAD::Mesh3D::Vertex::unitCross(@_)
+}
+
 =head3 facetNormal
+
+=head2 unitNormal
 
  my $uN = facetNormal( $facet );
  # or
  my $uN = $facet->normal();
+ # or
+ my $uN = unitNormal( $vertex1, $vertex2, $vertex3 )
 
 Uses S<C<unitDelta()>> and  S<C<unitCross()>> to find the normal-vector
 for the given B<Facet>, given the right-hand rule order for the B<Facet>'s
@@ -322,8 +342,14 @@ sub CAD::Mesh3D::Facet::normal($) {
 
 sub facetNormal {
     # this is the exportable wrapper at the Mesh3D level
-    shift if UNIVERSAL::isa($_[0], 'CAD::Mesh3D');      # if this was called $mesh->facetNormal($facet), throw away the mesh
+    croak "usage: facetNormal( \$facetF )" if UNIVERSAL::isa($_[0], 'CAD::Mesh3D');      # don't allow method calls on ::Mesh3D objects: ie, die on $m->facetNormal($F)
     CAD::Mesh3D::Facet::normal($_[0])
+}
+
+sub unitNormal {
+    # this is the exportable wrapper at the Mesh3D level
+    croak "usage: unitNormal( \$vertexA, \$vertexB, \$vertexC )" if UNIVERSAL::isa($_[0], 'CAD::Mesh3D');      # don't allow method calls on ::Mesh3D objects: ie, die on $m->unitNormal(@$F)
+    CAD::Mesh3D::Facet::normal( createFacet(@_) )
 }
 
 ################################################################
@@ -457,13 +483,10 @@ scheme is wrong.
 
  x bless the the outputs of createVertex, createFacet, createMesh
  x show that addToMesh will work as function or method
- - the :math functions work on ::Vertex or ::Facet, so the math
-   could all be moved to methods in the appropriate separate namespace;
-   each would also need a wrapper in the ::Mesh3D namespace, to be exported
-   x facetNormal / ::Facet::normal
-   _ unitCross / ::Vertex::unitCross
-   _ unitDelta / ::Vertex::unitDelta
-
+ x the :math functions work on ::Vertex or ::Facet, so the math
+   could all be moved to methods in the appropriate separate namespace
+ _ cover mesh->output() notation
+ _ not sure what to do with mesh->input, because that creates a new mesh
 
 =back
 

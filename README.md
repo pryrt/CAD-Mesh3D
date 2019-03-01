@@ -29,12 +29,10 @@ floating-point values to represent the position in 3D space.
 
         x bless the the outputs of createVertex, createFacet, createMesh
         x show that addToMesh will work as function or method
-        - the :math functions work on ::Vertex or ::Facet, so the math
-          could all be moved to methods in the appropriate separate namespace;
-          each would also need a wrapper in the ::Mesh3D namespace, to be exported
-          x facetNormal / ::Facet::normal
-          _ unitCross / ::Vertex::unitCross
-          _ unitDelta / ::Vertex::unitDelta
+        x the :math functions work on ::Vertex or ::Facet, so the math
+          could all be moved to methods in the appropriate separate namespace
+        _ cover mesh->output() notation
+        _ not sure what to do with mesh->input, because that creates a new mesh
 
 # AUTHOR
 
