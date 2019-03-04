@@ -72,7 +72,7 @@ Or you can independently enable the STL format sometime later:
 sub _io_functions {
     return (
         output => \&outputStl,
-        input => sub { croak sprintf "Sorry, %s's developer has not yet debugged inputting from STL", __PACKAGE__ },
+        input => \&inputStl, # sub { croak sprintf "Sorry, %s's developer has not yet debugged inputting from STL", __PACKAGE__ },
     );
 }
 
@@ -124,7 +124,7 @@ sub outputStl {
     # process the filehandle / filename
     my $doClose = 0;    # don't close the filehandle when done, unless it's a filename
     my $fh = my $fn = shift;
-    for($fh) {
+    for($fh) { # check_fh
         croak sprintf('!ERROR! outputStl(mesh, fh, opt): requires file handle or name') unless $_;
         $_ = \*STDOUT if /^STDOUT$/i;
         $_ = \*STDERR if /^STDERR$/i;
@@ -195,7 +195,28 @@ S<C<inputStl()>> will cause the script to die.
 =cut
 
 sub inputStl {
-    croak __PACKAGE__, "::inputStl(): not yet implemented, sorry.";
+    my ($file, $asc) = @_;
+carp "\n\n", __PACKAGE__, "::inputStl($file)\n";
+    my $stl = CAD::Format::STL->new()->load($file);       # CFS claims it take handle or name
+        # TODO: bug report <https://rt.cpan.org/Public/Dist/Display.html?Name=CAD-Format-STL>:
+        #   examples show ->reader() and ->writer(), but that example code doesn't compile
+    my @stlf = $stl->part()->facets();
+carp __PACKAGE__, "::inputStl($file): #facets = ", scalar(@stlf), join("\n\tfacet = ", '', @stlf);
+        # facets() returns an array of array-refs;
+        # each of those has four array-refs -- three for the vertexes, and a fourth for the normal
+        # I need to igore the normal, and transform to the proper objects, in-place
+    my @facets = ();
+    foreach (@stlf) {
+        shift @$_; # ignore the normal vector
+        my @verts = ();
+        for my $v (@$_) {
+            push @verts, createVertex( @$v );
+            print "\tv = $verts[-1]\n";
+        }
+        push @facets, createFacet(@verts);
+        print "\tfacet = $facets[-1]\n\n";
+    }
+    return createMesh( @facets );
 }
 
 =head1 TODO

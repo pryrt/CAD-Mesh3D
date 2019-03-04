@@ -4,7 +4,7 @@ use warnings;
 use Test::More tests => 23;
 use Test::Exception;
 
-use CAD::Mesh3D qw(+STL :all);
+use CAD::Mesh3D qw(:all);
 
 sub test_format {
     my $format = shift;
@@ -30,7 +30,8 @@ sub test_format {
 ##################################################
 # enableFormat() functional coverage tests
 ##################################################
-test_format( 'STL', 'CAD::Mesh3D::STL', input => qr/not yet debugged inputting from STL/ );
+enableFormat('STL');
+test_format( 'STL', 'CAD::Mesh3D::STL' );
 
 ##################################################
 # enableFormat(): missing input/output functions
