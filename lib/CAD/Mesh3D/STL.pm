@@ -4,6 +4,7 @@ use strict;
 use Carp;
 use 5.010;  # M::V::R requires 5.010, so might as well make use of the defined-or // notation :-)
 use CAD::Format::STL qw//;
+use CAD::Mesh3D qw/:create/;
 our $VERSION = 0.001_011;
 
 =head1 NAME
@@ -12,7 +13,7 @@ CAD::Mesh3D::STL - Used by CAD::Mesh3D to provide the STL format-specific functi
 
 =head1 SYNOPSIS
 
- use CAD::Mesh3D qw(STL :create :formats);       # enable CAD::Mesh3D::STL, and import the :create and :formats tags
+ use CAD::Mesh3D qw(+STL :create :formats);       # enable CAD::Mesh3D::STL, and import the :create and :formats tags
  my $v1 = createVertex(...);
  ...
  my $tri  = createFacet($v1, $v2, $v3);
