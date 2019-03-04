@@ -14,7 +14,7 @@ are.
 Please tell your user to enable your format.  For example, if you're developing C<CAD::Mesh3D::PNG>,
 then tell your user to enable using
 
- use CAD::Mesh3D qw/PNG/;
+ use CAD::Mesh3D qw/+PNG :formats/;
 
 or
 
@@ -107,7 +107,7 @@ When documenting how your user will use this function, it is recommended to use
 the C<CAD::Mesh3D::output()> wrapper, rather than telling your user to use your
 internal function directly.  For example, your B<SYNOPSIS> might be:
 
- use CAD::Mesh3D qw/YourFormat :output/;
+ use CAD::Mesh3D qw/+YourFormat :output/;
  $mesh = ...;  # define your mesh here using CAD::Mesh3D
  output( $mesh, YourFormat => $filename );
 
