@@ -195,26 +195,46 @@ S<C<inputStl()>> will cause the script to die.
 =cut
 
 sub inputStl {
-    my ($file, $asc) = @_;
-carp "\n\n", __PACKAGE__, "::inputStl($file)\n";
+    my ($file, $asc_or_bin) = @_;
+    my @pass_args = ($file);
+    if( !defined($asc_or_bin) || ('' eq $asc_or_bin)) { # automatic
+        # automatic won't work on in-memory files, for which stat() will give an "unopened filehandle" warning
+        in_memory_check: {
+            local $SIG{__WARN__} = sub {
+                if( $_[0] =~ /\Qstat() on unopened filehandle\E/ ) {
+                    croak "\ninputStl($file): ERROR\n",
+                        "\tin-memory file handles are not allowed without explicit ASCII or BINARY setting\n",
+                        "\tplease rewrite the call with an explicit\n",
+                        "\t\tinputStl(\$in_mem_fh, \$asc_or_bin)\n",
+                        "\tor\n",
+                        "\t\tinput(STL => \$in_mem_fh, \$asc_or_bin)\n",
+                        "\twhere \$asc_or_bin is either 'ascii' or 'binary'\n";
+                        " ";
+                }
+            };
+            stat($file);
+        }
+
+    }
+    $asc_or_bin ||= 'binary';      # 0 or '' or undefined defaults to binary
+
+
     my $stl = CAD::Format::STL->new()->load($file);       # CFS claims it take handle or name
         # TODO: bug report <https://rt.cpan.org/Public/Dist/Display.html?Name=CAD-Format-STL>:
         #   examples show ->reader() and ->writer(), but that example code doesn't compile
     my @stlf = $stl->part()->facets();
-carp __PACKAGE__, "::inputStl($file): #facets = ", scalar(@stlf), join("\n\tfacet = ", '', @stlf);
-        # facets() returns an array of array-refs;
-        # each of those has four array-refs -- three for the vertexes, and a fourth for the normal
-        # I need to igore the normal, and transform to the proper objects, in-place
+
+    # facets() returns an array of array-refs;
+    # each of those has four array-refs -- three for the vertexes, and a fourth for the normal
+    # I need to igore the normal, and transform to the proper objects, in-place
     my @facets = ();
     foreach (@stlf) {
         shift @$_; # ignore the normal vector
         my @verts = ();
         for my $v (@$_) {
             push @verts, createVertex( @$v );
-            print "\tv = $verts[-1]\n";
         }
         push @facets, createFacet(@verts);
-        print "\tfacet = $facets[-1]\n\n";
     }
     return createMesh( @facets );
 }

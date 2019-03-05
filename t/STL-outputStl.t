@@ -1,7 +1,7 @@
 use 5.010;      # v5.8 equired for in-memory files; v5.10 required for named backreferences and // in the commented-note() calls
 use strict;
 use warnings;
-use Test::More tests => 5 + 5*28 + 3 + 5;
+use Test::More tests => 5 + 5*28 + 3 + 3;
 
 use CAD::Mesh3D qw(+STL :all);
 
@@ -205,21 +205,6 @@ foreach my $asc (undef, 0, qw(false binary bin true ascii asc), 1) {
     like( $slurp1, $expected_ubin,  sprintf 'mesh->output(STL => "%s", binary): binary file matches', $f1 );
     test_ascii( $slurp2, $exp_ascii_aref, sprintf 'mesh->output(STL => "%s", ascii)', $f2 );
 
-}
-
-# input(): debugging
-{
-    # input(): not yet defined
-#    throws_ok { my $mesh = input(STL => 'files/cube.stl') } qr/Sorry, CAD::Mesh3D::STL's developer has not yet debugged inputting from STL/, 'Error Handling: input() has not been implemented yet';
-#    throws_ok { my $mesh = CAD::Mesh3D::STL::inputStl('files/cube_binary.stl') } qr/\QCAD::Mesh3D::STL::inputStl(): not yet implemented, sorry.\E/, 'Error Handling: direct call to inputStl(), which has not been implemented yet';
-diag "\n"x 20;
-    my $memory = do { open my $fh, '<', 'files/cube.stl'; local $/; <$fh> };    # slurp
-    open my $memfh, '<', \$memory or die "in-memory handle failed: $!";
-    foreach my $file ( 'files/cube.stl', $memfh, 'files/cube_binary.stl') {
-        diag "file => $file\n";
-        my $mesh = input(STL => $file);
-        diag "\n"x 20;
-    }
 }
 
 ###### fault handling ######
