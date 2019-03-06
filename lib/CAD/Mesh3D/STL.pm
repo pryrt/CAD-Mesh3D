@@ -194,6 +194,10 @@ S<C<inputStl()>> will cause the script to die.
 
 =cut
 
+# TODO: in sscce-memfh-intercept-warning.pl, confirmed it's safe to warn/carp/die/croak inside __WARN__ handler
+#   (see pervar %SIG => "The __DIE__ handler is explicitly disabled during the call, so that you can die from a __DIE__ handler. Similarly for __WARN__ .")
+#   so I can now make the __WARN__ handler pass thru other warnings
+
 sub inputStl {
     my ($file, $asc_or_bin) = @_;
     my @pass_args = ($file);
