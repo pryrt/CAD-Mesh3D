@@ -212,9 +212,8 @@ sub inputStl {
                         " ";
                 }
             };
-            stat($file);
+            stat($file);    # this will cause the warning if it's in-memory
         }
-
     }
     $asc_or_bin ||= 'binary';      # 0 or '' or undefined defaults to binary
 
