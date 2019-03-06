@@ -214,6 +214,8 @@ sub inputStl {
                         "\t\tinput(STL => \$in_mem_fh, \$asc_or_bin)\n",
                         "\twhere \$asc_or_bin is either 'ascii' or 'binary'\n";
                         " ";
+                } else {
+                    carp @_;
                 }
             };
             stat($file);    # this will cause the warning if it's in-memory
