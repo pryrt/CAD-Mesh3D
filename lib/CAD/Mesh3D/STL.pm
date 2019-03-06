@@ -214,11 +214,12 @@ sub inputStl {
             };
             stat($file);    # this will cause the warning if it's in-memory
         }
-    }
-    $asc_or_bin ||= 'binary';      # 0 or '' or undefined defaults to binary
+    } elsif ( $asc_or_bin =~ /(asc(?:ii)?|bin(?:ary)?)/i ) {
+        # we found an explicit 'ascii/binary' indicator
+        unshift @pass_args, $asc_or_bin;
+    } # otherwise, ignore $asc_or_bin as unknown
 
-
-    my $stl = CAD::Format::STL->new()->load($file);       # CFS claims it take handle or name
+    my $stl = CAD::Format::STL->new()->load(@pass_args); # CFS claims it take handle or name
         # TODO: bug report <https://rt.cpan.org/Public/Dist/Display.html?Name=CAD-Format-STL>:
         #   examples show ->reader() and ->writer(), but that example code doesn't compile
     my @stlf = $stl->part()->facets();

@@ -12,17 +12,9 @@ use CAD::Mesh3D qw(+STL :all);
 use Scalar::Util qw/openhandle/;
 my $memory = do { open my $fh, '<', 'files/cube.stl'; local $/; <$fh> };    # slurp
 open my $memfh, '<', \$memory or die "in-memory handle failed: $!";
-warn __LINE__, "\t", +(openhandle( $memfh ) ? 'filehandle open' : 'filehandle not available'), "\n";
-warn __LINE__, "\t", join($",stat $memfh),"\n";
-foreach my $file ( $memfh, 'files/cube.stl', 'files/cube_binary.stl') {
-    diag "file => $file\n";
-warn __LINE__, "\t", +(openhandle( $memfh ) ? 'filehandle open' : 'filehandle not available'), "\n";
-warn __LINE__, "\t", +(openhandle( $file ) ? 'filehandle open' : 'filehandle not available'), "\n"      if UNIVERSAL::isa($file, 'GLOB');
-warn __LINE__, "\t", join($,,stat $memfh),"\n";
-    my $mesh = input(STL => $file);
-warn __LINE__, "\t", +(openhandle( $memfh ) ? 'filehandle open' : 'filehandle not available'), "\n";
-warn __LINE__, "\t", +(openhandle( $file ) ? 'filehandle open' : 'filehandle not available'), "\n"      if UNIVERSAL::isa($file, 'GLOB');
-warn __LINE__, "\t", join($,,stat $memfh),"\n";
+foreach my $file ( $memfh, 'files/cube.stl', 'files/cube_binary.stl' ) {
+    # note "\n\nfile => $file\n";
+    my $mesh = ($file eq $memfh) ? input(STL => $file, 'ascii') : input(STL => $file);
     isa_ok( $mesh , 'CAD::Mesh3D');
     is( @$mesh , 12 , "input(STL=>$file): 12 facets" );
     my $f = $mesh->[8];
@@ -32,9 +24,8 @@ warn __LINE__, "\t", join($,,stat $memfh),"\n";
     foreach my $i ( 0 .. $#cmpv ) {
         is_deeply( $f->[$i], $cmpv[$i] , "compare facet.v[$i] to $cmpv[$i]");
     }
-    last;
-#    <STDIN>;
 }
+close $memfh;
 
 ###### fault handling ######
 use Test::Exception;
