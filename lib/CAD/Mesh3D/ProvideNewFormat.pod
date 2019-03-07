@@ -107,11 +107,56 @@ When documenting how your user will use this function, it is recommended to use
 the C<CAD::Mesh3D::output()> wrapper, rather than telling your user to use your
 internal function directly.  For example, your B<SYNOPSIS> might be:
 
- use CAD::Mesh3D qw/+YourFormat :output/;
+ use CAD::Mesh3D qw/+YourFormat :formats/;
  $mesh = ...;  # define your mesh here using CAD::Mesh3D
- output( $mesh, YourFormat => $filename );
+ $mesh->output( YourFormat => $filename );
 
-=cut
+=head2 Input Function
+
+Your input function needs take at least one argument, the C<$file>, and
+should populate that mesh from the supplied C<$file>.
+You may feel free to define other arguments as needed, but those two should
+be first, to maintain consistency across file formats.
+
+The user will call C<my $mesh = CAD::Mesh3D::input( $formatName =E<gt> $file )>.
+C<CAD::Mesh3D> will check its list of enabled formats against C<$formatName>; if
+C<$formatName> is found, it will pass the remaining arguments to the output it
+obtained from L<_io_functions()|/"_io_functions">.
+
+Note that C<$file> could, in theory, be either a file name, or a filehandle to
+the file, already opened in the right mode.  L<CAD::Mesh3D::STL> gives an example
+of how to handle that.  It is recommend, though not required, that your function
+accepts either one.
+
+This snippet shows the basic form of the output function, or you can see L<CAD::Mesh3D::STL>
+for a working example:
+
+ sub my_plaintext_input_function {
+     my $file = shift;
+     my %args = @_;
+
+     # open $file if necesssary, or do error checking
+     ...
+
+     my @facets = ();
+     foreach my $f ( 1 .. $nFacetsDesired ) {
+        # populate with three vertexes, preferably using createVertex(), from your $file
+        my @verts = ( createVertex(...), createVertex(...), createVertex(...) );
+
+        # append to the list of facets
+        push @facets, createFacet(@verts);
+     }
+
+     # combine those facets into a mesh
+     return createMesh( @facets );
+ }
+
+When documenting how your user will use this function, it is recommended to use
+the C<CAD::Mesh3D::input()> wrapper, rather than telling your user to use your
+internal function directly.  For example, your B<SYNOPSIS> might be:
+
+ use CAD::Mesh3D qw/+YourFormat :formats/;
+ $mesh = input( YourFormat => $filename );
 
 =head1 EXAMPLE
 
