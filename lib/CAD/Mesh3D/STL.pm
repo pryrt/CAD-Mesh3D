@@ -215,7 +215,8 @@ sub inputStl {
                     carp @_; # uncoverable statement
                 }
             };
-            stat($file);    # this will cause the warning if it's in-memory
+            my $size = (stat($file))[7];    # this will cause the warning if it's in-memory
+            carp "stat() on unopened filehandle" unless defined $size;  # force the warning on 5.16-5.20, which for some reason didn't warn...
         }
     } elsif ( $asc_or_bin =~ /(asc(?:ii)?|bin(?:ary)?)/i ) {
         # we found an explicit 'ascii/binary' indicator
