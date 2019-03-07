@@ -194,10 +194,6 @@ S<C<inputStl()>> will cause the script to die.
 
 =cut
 
-# TODO: in sscce-memfh-intercept-warning.pl, confirmed it's safe to warn/carp/die/croak inside __WARN__ handler
-#   (see pervar %SIG => "The __DIE__ handler is explicitly disabled during the call, so that you can die from a __DIE__ handler. Similarly for __WARN__ .")
-#   so I can now make the __WARN__ handler pass thru other warnings
-
 sub inputStl {
     my ($file, $asc_or_bin) = @_;
     my @pass_args = ($file);
@@ -205,6 +201,7 @@ sub inputStl {
         # automatic won't work on in-memory files, for which stat() will give an "unopened filehandle" warning
         in_memory_check: {
             local $SIG{__WARN__} = sub {
+                # uncoverable branch false
                 if( $_[0] =~ /\Qstat() on unopened filehandle\E/ ) {
                     croak "\ninputStl($file): ERROR\n",
                         "\tin-memory file handles are not allowed without explicit ASCII or BINARY setting\n",
@@ -212,10 +209,10 @@ sub inputStl {
                         "\t\tinputStl(\$in_mem_fh, \$asc_or_bin)\n",
                         "\tor\n",
                         "\t\tinput(STL => \$in_mem_fh, \$asc_or_bin)\n",
-                        "\twhere \$asc_or_bin is either 'ascii' or 'binary'\n";
+                        "\twhere \$asc_or_bin is either 'ascii' or 'binary'\n",
                         " ";
                 } else {
-                    carp @_;
+                    carp @_; # uncoverable statement
                 }
             };
             stat($file);    # this will cause the warning if it's in-memory
@@ -223,7 +220,9 @@ sub inputStl {
     } elsif ( $asc_or_bin =~ /(asc(?:ii)?|bin(?:ary)?)/i ) {
         # we found an explicit 'ascii/binary' indicator
         unshift @pass_args, $asc_or_bin;
-    } # otherwise, ignore $asc_or_bin as unknown
+    } else { # otherwise, error
+        croak "\ninputStl($file, '$asc_or_bin'): ERROR: unknown mode '$asc_or_bin'\n ";
+    }
 
     my $stl = CAD::Format::STL->new()->load(@pass_args); # CFS claims it take handle or name
         # TODO: bug report <https://rt.cpan.org/Public/Dist/Display.html?Name=CAD-Format-STL>:
