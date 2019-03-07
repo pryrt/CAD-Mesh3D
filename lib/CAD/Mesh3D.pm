@@ -9,7 +9,7 @@ our $VERSION = 0.001_011;
 
 =head1 NAME
 
-CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D printing
+CAD::Mesh3D - Create and Manipulate 3D Vertexes and Meshes and output for 3D printing
 
 =head1 SYNOPSIS
 
@@ -17,20 +17,19 @@ CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D pri
  my $vect = createVertex();
  my $tri  = createFacet($v1, $v2, $v3);
  my $mesh = createMesh();
- addToMesh($mesh, $tri);
- push @$mesh, $tri;               # manual method of addToMesh()
+ $mesh->addToMesh($tri);
  ...
- $mesh->output(STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
+ $mesh->output(STL => $filehandle_or_filename, $ascii_or_binary);
 
 =head1 DESCRIPTION
 
-A framework to create and manipulate 3D vertices and meshes, suitable for generating STL files
+A framework to create and manipulate 3D vertexes and meshes, suitable for generating STL files
 (or other similar formats) for 3D printing.
 
 A B<Mesh> is the container for the surface of the shape or object being generated.  The surface is broken down
-into locally-flat pieces known as B<Facet>s.  Each Facet is a triangle made from exactly points, called
-B<Vertex>es or vertices.  Each Vertex is made up of three x, y, and z B<coordinate>s, which are just
-floating-point values to represent the position in 3D space.
+into locally-flat pieces known as B<Facets>.  Each B<Facet> is a triangle made from three points, called
+B<Vertexes> (also spelled as vertices).  Each B<Vertex> is made up of three x, y, and z B<coordinates>, which
+are just floating-point values to represent the position in 3D space.
 
 =cut
 
@@ -111,7 +110,7 @@ sub createVertex {
 
 Creates a B<Facet> using the three B<Vertex> arguments as the corner points of the triangle.
 
-Note that the order of the B<Facet>'s vertices matters, and follows the
+Note that the order of the B<Facet>'s B<Vertexes> matters, and follows the
 L<right-hand rule|https://en.wikipedia.org/wiki/Right-hand_rule> to determine the "outside" of
 the B<Facet>: if you are looking at the B<Facet> such that the points are arranged in a
 counter-clockwise order, then everything from the B<Facet> towards you (and behind you) is
@@ -120,7 +119,7 @@ counter-clockwise order, then everything from the B<Facet> towards you (and behi
 =cut
 
 sub createFacet {
-    croak sprintf("!ERROR! createFacet(t1,t2,t3): requires 3 Vertices; you supplied %d", scalar @_)
+    croak sprintf("!ERROR! createFacet(t1,t2,t3): requires 3 Vertexes; you supplied %d", scalar @_)
         unless 3==@_;
     foreach my $v ( @_ ) {
         croak sprintf("!ERROR! createFacet(t1,t2,t3): each Vertex must be an array ref or equivalent object; you supplied a scalar\"%s\"", $v//'<undef>')
@@ -139,14 +138,14 @@ sub createFacet {
 
  my @f = createQuadrangleFacets( $a, $b, $c, $d );
 
-Creates two B<Facet>s using the four B<Vertex> arguments as the corners of a quadrangle
+Creates two B<Facets> using the four B<Vertex> arguments as the corners of a quadrangle
 (like with C<createFacet>, the arguments are ordered by the right-hand rule).  This returns
-a list of two triangular B<Facet>s, for the triangles B<ABC> and B<ACD>.
+a list of two triangular B<Facets>, for the triangles B<ABC> and B<ACD>.
 
 =cut
 
 sub createQuadrangleFacets {
-    croak sprintf("!ERROR! createQuadrangleFacets(t1,t2,t3,t4): requires 4 Vertices; you supplied %d", scalar @_)
+    croak sprintf("!ERROR! createQuadrangleFacets(t1,t2,t3,t4): requires 4 Vertexes; you supplied %d", scalar @_)
         unless 4==@_;
     my ($a,$b,$c,$d) = @_;
     return ( createFacet($a,$b,$c), createFacet($a,$c,$d) );
@@ -176,7 +175,7 @@ sub getz($) { shift()->[ZCOORD] }
  my $m = createMesh();          # empty
  my $s = createMesh($f, ...);   # pre-populated
 
-Creates a B<Mesh>, optionally pre-populating the Mesh with the supplied B<Facet>s.
+Creates a B<Mesh>, optionally pre-populating the Mesh with the supplied B<Facets>.
 
 =cut
 
@@ -185,7 +184,7 @@ sub createMesh {
         croak sprintf("!ERROR! createMesh(...): each triangle must be defined; this one was undef")
             unless defined $tri;
 
-        croak sprintf("!ERROR! createMesh(...): each triangle requires 3 Vertices; you supplied %d: <%s>", scalar @$tri, join(",", @$tri))
+        croak sprintf("!ERROR! createMesh(...): each triangle requires 3 Vertexes; you supplied %d: <%s>", scalar @$tri, join(",", @$tri))
             unless 3==@$tri;
 
         foreach my $v ( @$tri ) {
@@ -204,8 +203,11 @@ sub createMesh {
 
 =head4 addToMesh
 
- addToMesh($mesh, $tri);
- addToMesh($mesh, $tri1, ... $triN);
+ $mesh->addToMesh($f);
+ $mesh->addToMesh($f1, ... $fN);
+ addToMesh($mesh, $f1, ... $fN);
+
+Adds B<Facets> to an existing B<Mesh>.
 
 =cut
 
@@ -220,7 +222,7 @@ sub addToMesh {
         croak sprintf("!ERROR! addToMesh(...): each triangle must be an array ref or equivalent object; you supplied \"%s\"", ref $tri)
             unless UNIVERSAL::isa($tri, 'ARRAY');
 
-        croak sprintf("!ERROR! addToMesh(...): each triangle requires 3 Vertices; you supplied %d: <%s>", scalar @$tri, join(",", @$tri))
+        croak sprintf("!ERROR! addToMesh(...): each triangle requires 3 Vertexes; you supplied %d: <%s>", scalar @$tri, join(",", @$tri))
             unless 3==@$tri;
 
         foreach my $v ( @$tri ) {
@@ -245,10 +247,17 @@ sub addToMesh {
 
 =head2 MATH FUNCTIONS
 
-Three-dimensional math can take some special functions.  Some of those
-are available to your script.
+ use CAD::Mesh3D qw/:math/;
 
-They can be imported into your script I<en masse> using the C<:math> tag.
+Most of the math on the three-dimensional B<Vertexes> are handled by
+L<Math::Matrix::Real>; all the matrix methods will work on B<Vertexes>,
+as documented for L<Math::Matrix::Real>.
+However, three-dimensional math can take some special functions that
+aren't included in the generic matrix library. CAD::Mesh3D implements
+a few of these special-purpose functions for you.
+
+They can be called as methods on the B<Vertex> variables, or
+imported as functions into your script using the C<:math> tag.
 
 =head3 unitDelta
 
@@ -282,7 +291,7 @@ sub unitDelta {
 
  my $uN = unitCross( $uAB, $uBC );
  # or
- my $uN  = $uAB->unitCross($uBC);
+ my $uN = $uAB->unitCross($uBC);
 
 Returns the cross product for the two vectors, which gives a vector
 perpendicular to both.  This is scaled so that the vector has a
@@ -318,7 +327,7 @@ sub unitCross {
 
 =head3 facetNormal
 
-=head2 unitNormal
+=head3 unitNormal
 
  my $uN = facetNormal( $facet );
  # or
@@ -328,13 +337,13 @@ sub unitCross {
 
 Uses S<C<unitDelta()>> and  S<C<unitCross()>> to find the normal-vector
 for the given B<Facet>, given the right-hand rule order for the B<Facet>'s
-vertices.
+vertexes.
 
 =cut
 
 sub CAD::Mesh3D::Facet::normal($) {
     # TODO = argument checking
-    my ($A,$B,$C) = @{ shift() };   # three vertices of the facet
+    my ($A,$B,$C) = @{ shift() };   # three vertexes of the facet
     my $uAB = unitDelta( $A, $B );
     my $uBC = unitDelta( $B, $C );
     return    unitCross( $uAB, $uBC );
@@ -466,12 +475,19 @@ sub input {
 
 =over
 
-=item * L<CAD::Format::STL> - includes both input and output from STL (ASCII and BINARY)
+=item * L<Math::Vector::Real> - This provides matrix math
 
-The unaddressed Windows bug was killer for me.  I possibly would have offered
-to co-maintain and implement the bug fix, but I also wanted the possibility
-of adding sub-modules to implment other input/output formats -- in which case, the naming
-scheme is wrong.
+The B<Vertexes> were implemented using this module, to easily handle the
+B<Vertex> and B<Facet> calculations.
+
+=item * L<CAD::Format::STL> - This provides simple input and output between
+STL files and an array-of-arrays perl data structure.
+
+Adding more features to this module (especially the math on the B<Vertexes> and C<Facets>)
+and making a generic interface (which can be made to work with other formats) were the two
+primary motivators behind the CAD::Mesh3D development.
+
+This module is still used as the backend for the L<CAD::Mesh3D::STL> format-module.
 
 =back
 
@@ -479,12 +495,8 @@ scheme is wrong.
 
 =over
 
-=item * allow object-oriented notation
-
- x cover mesh->output() notation
- _ should I allow mesh->input?
-    - if so, does that mean that %$mesh = %{ input(STL=>$file) }?
-    - or does $mesh remain unchanged, returning a new, separate mesh object?
+=item * Add more math for B<Vertexes> and B<Facets>, as new functions are identified
+as being useful.
 
 =back
 
