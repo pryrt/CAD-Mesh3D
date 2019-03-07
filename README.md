@@ -1,6 +1,6 @@
 # NAME
 
-CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D printing
+CAD::Mesh3D - Create and Manipulate 3D Vertexes and Meshes and output for 3D printing
 
 # SYNOPSIS
 
@@ -8,29 +8,24 @@ CAD::Mesh3D - Create and Manipulate 3D Vertices and Meshes and output for 3D pri
     my $vect = createVertex();
     my $tri  = createFacet($v1, $v2, $v3);
     my $mesh = createMesh();
-    addToMesh($mesh, $tri);
-    push @$mesh, $tri;               # manual method of addToMesh()
+    $mesh->addToMesh($tri);
     ...
-    $mesh->output(STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
+    $mesh->output(STL => $filehandle_or_filename, $ascii_or_binary);
 
 # DESCRIPTION
 
-A framework to create and manipulate 3D vertices and meshes, suitable for generating STL files
+A framework to create and manipulate 3D vertexes and meshes, suitable for generating STL files
 (or other similar formats) for 3D printing.
 
 A **Mesh** is the container for the surface of the shape or object being generated.  The surface is broken down
-into locally-flat pieces known as **Facet**s.  Each Facet is a triangle made from exactly points, called
-**Vertex**es or vertices.  Each Vertex is made up of three x, y, and z **coordinate**s, which are just
-floating-point values to represent the position in 3D space.
+into locally-flat pieces known as **Facets**.  Each **Facet** is a triangle made from three points, called
+**Vertexes** (also spelled as vertices).  Each **Vertex** is made up of three x, y, and z **coordinates**, which
+are just floating-point values to represent the position in 3D space.
 
 # TODO
 
-- allow object-oriented notation
-
-        x cover mesh->output() notation
-        _ should I allow mesh->input?
-           - if so, does that mean that %$mesh = %{ input(STL=>$file) }?
-           - or does $mesh remain unchanged, returning a new, separate mesh object?
+- Add more math for **Vertexes** and **Facets**, as new functions are identified
+as being useful.
 
 # AUTHOR
 

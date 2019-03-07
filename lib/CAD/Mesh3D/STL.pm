@@ -13,19 +13,18 @@ CAD::Mesh3D::STL - Used by CAD::Mesh3D to provide the STL format-specific functi
 
 =head1 SYNOPSIS
 
- use CAD::Mesh3D qw(+STL :create :formats);       # enable CAD::Mesh3D::STL, and import the :create and :formats tags
- my $v1 = createVertex(...);
- ...
+ use CAD::Mesh3D qw(+STL :create :formats);
+ my $vect = createVertex();
  my $tri  = createFacet($v1, $v2, $v3);
  my $mesh = createMesh();
- addToMesh($mesh, $tri);
+ $mesh->addToMesh($tri);
  ...
- $mesh->output(STL => $filehandle_or_filename, $true_for_ascii_false_for_binary);
+ $mesh->output(STL => $filehandle_or_filename, $ascii_or_binary);
 
 =head1 DESCRIPTION
 
 This module is used by L<CAD::Mesh3D> to provide the STL format-specific functionality, including
-saving B<Mesh>es as STL files, or loading a B<Mesh>es from STL files.
+saving B<Meshes> as STL files, or loading a B<Meshes> from STL files.
 
 L<STL|https://en.wikipedia.org/wiki/STL_(file_format)> ("stereolithography") files are a CAD format used as inputs in the 3D printing process.
 
@@ -72,7 +71,7 @@ Or you can independently enable the STL format sometime later:
 sub _io_functions {
     return (
         output => \&outputStl,
-        input => sub { croak sprintf "Sorry, %s's developer has not yet debugged inputting from STL", __PACKAGE__ },
+        input => \&inputStl, # sub { croak sprintf "Sorry, %s's developer has not yet debugged inputting from STL", __PACKAGE__ },
     );
 }
 
@@ -124,7 +123,7 @@ sub outputStl {
     # process the filehandle / filename
     my $doClose = 0;    # don't close the filehandle when done, unless it's a filename
     my $fh = my $fn = shift;
-    for($fh) {
+    for($fh) { # check_fh
         croak sprintf('!ERROR! outputStl(mesh, fh, opt): requires file handle or name') unless $_;
         $_ = \*STDOUT if /^STDOUT$/i;
         $_ = \*STDERR if /^STDERR$/i;
@@ -167,44 +166,115 @@ sub outputStl {
 
 =head3 inputStl
 
-NOT YET IMPLEMENTED
-
 To input your B<Mesh> from an STL file, you should use L<CAD::Mesh3D>'s C<input()> wrapper function,
 which is included in the C<:formats> import tag.
 
  use CAD::Mesh3D qw/+STL :formats/;
- my $mesh = input(STL => $file, $asc);
+ my $mesh = input(STL => $file, $mode);
+ my $mesh2= input(STL => $file);        # will determine ascii/binary based on file contents
 
 The wrapper will call the C<CAD::Mesh3D::STL::inputStl()> function internally, but makes it easy to
 keep your code compatible with other 3d-file formats.
 
 If you insist on calling the STL function directly, it is possible, but not recommended, to call
 
- my $mesh = CAD::Mesh3D::STL::inputStl($file, $asc);
+ my $mesh = CAD::Mesh3D::STL::inputStl($file, $mode);
 
 The C<$file> argument is either an already-opened filehandle, or the name of the file
 (if the full path is not specified, it will default to your script's directory),
 or "STDIN" to receive the input from the standard input handle.
 
-The C<$asc> argument determines whether to use STL's ASCII mode: a non-zero numeric value,
-or the case-insensitive text "ASCII" or "ASC" will select ASCII mode; a missing or undefined
-C<$asc> argument, or a zero value or empty string, or the case-insensitive text "BINARY"
-or "BIN" will select BINARY mode; if the argument contains a string other than those mentioned,
-S<C<inputStl()>> will cause the script to die.
+The C<$mode> argument determines whether to use STL's ASCII mode:
+The case-insensitive text "ASCII" or "ASC" will select ASCII mode.
+The case-insensitive text "BINARY" or "BIN" will select BINARY mode.
+If the argument contains a string other than those mentioned, S<C<inputStl()>> will cause
+the script to die.
+On a missing or undefined C<$mode> argument, or empty string, will cause C<input()> to try
+to determine if it's ASCII or BINARY; C<input()> will die if it cannot determine the file's
+mode automatically.
+
+Caveat: When using an in-memory filehandle, you must explicitly define the C<$mode> option,
+otherwise C<input()> will die.  (In-memory filehandles are not common. See L<open>, search for
+"in-memory file", to find a little more about them.  It is not likely you will require such
+a situation, but with explicit C<$mode>, they will work.)
 
 =cut
 
 sub inputStl {
-    croak __PACKAGE__, "::inputStl(): not yet implemented, sorry.";
+    my ($file, $asc_or_bin) = @_;
+    my @pass_args = ($file);
+    if( !defined($asc_or_bin) || ('' eq $asc_or_bin)) { # automatic
+        # automatic won't work on in-memory files, for which stat() will give an "unopened filehandle" warning
+        #   unfortunately, perl v5.16 - v5.20 seem to _not_ give that warning.  Check definedness of $size, instead
+        #   (which actually simplifies the check, significantly)
+        in_memory_check: {
+            no warnings 'unopened';         # avoid printing the warning; just looking for the definedness of $size
+            my $size = (stat($file))[7];    # on perl v<5.16 and v>5.20, will warn; on all tested perl, will give $size=undef
+            croak "\ninputStl($file): ERROR\n",
+                        "\tin-memory file handles are not allowed without explicit ASCII or BINARY setting\n",
+                        "\tplease rewrite the call with an explicit\n",
+                        "\t\tinputStl(\$in_mem_fh, \$asc_or_bin)\n",
+                        "\tor\n",
+                        "\t\tinput(STL => \$in_mem_fh, \$asc_or_bin)\n",
+                        "\twhere \$asc_or_bin is either 'ascii' or 'binary'\n",
+                        " "
+                unless defined $size;
+        }
+    } elsif ( $asc_or_bin =~ /(asc(?:ii)?|bin(?:ary)?)/i ) {
+        # we found an explicit 'ascii/binary' indicator
+        unshift @pass_args, $asc_or_bin;
+    } else { # otherwise, error
+        croak "\ninputStl($file, '$asc_or_bin'): ERROR: unknown mode '$asc_or_bin'\n ";
+    }
+
+    my $stl = CAD::Format::STL->new()->load(@pass_args); # CFS claims it take handle or name
+        # TODO: bug report <https://rt.cpan.org/Public/Dist/Display.html?Name=CAD-Format-STL>:
+        #   examples show ->reader() and ->writer(), but that example code doesn't compile
+    my @stlf = $stl->part()->facets();
+
+    # facets() returns an array of array-refs;
+    # each of those has four array-refs -- three for the vertexes, and a fourth for the normal
+    # I need to igore the normal, and transform to the proper objects, in-place
+    my @facets = ();
+    foreach (@stlf) {
+        shift @$_; # ignore the normal vector
+        my @verts = ();
+        for my $v (@$_) {
+            push @verts, createVertex( @$v );
+        }
+        push @facets, createFacet(@verts);
+    }
+    return createMesh( @facets );
 }
 
-=head1 TODO
+=head1 SEE ALSO
 
 =over
 
-=item * implement inputSTL()
+=item * L<CAD::Format::STL> - This is the backend used by CAD::Mesh3D::STL, which handles them
+actual parsing and writing of the STL files.
 
 =back
+
+=head1 KNOWN ISSUES
+
+=head2 CAD::Format::STL binary Windows bug
+
+There is a L<known bug|https://rt.cpan.org/Public/Bug/Display.html?id=83595> in CAD::Format::STL v0.2.1,
+which on Windows systems will cause binary STL files which happen to have the 0x0D byte to corrupt the
+data on output or input.  Most binary STL files will work just fine; but there are a non-trivial number
+of floating-point values in the STL which include the 0x0D byte.  There is a test for this in the C<xt\>
+author-tests of the CAD-Mesh3D distribution.
+
+If your copy of CAD::Format::STL is affected by this bug, there is an easy patch, which you can manually
+add by editing your installed C<CAD\Format\STL.pm>: near line 423, after the error checking in
+C<sub _write_binary>, add the line C<binmode $fh;> as the fourth line of code in that sub.  Similarly,
+near line 348, add the line C<binmode $fh;> as the third line of code inside the C<sub _read_binary>.
+
+The author of CAD::Format::STL has been notified, both through the
+L<issue tracker|https://rt.cpan.org/Public/Bug/Display.html?id=83595>, and responding to requests to
+fix the bug.  Hopefully, when the author has time, a new version of CAD::Format::STL will be released
+with the bug fixed.  Until then, patching the module is the best workaround.
 
 =head1 AUTHOR
 

@@ -4,7 +4,7 @@ use warnings;
 use Test::More tests => 23;
 use Test::Exception;
 
-use CAD::Mesh3D qw(+STL :all);
+use CAD::Mesh3D qw(:formats);
 
 sub test_format {
     my $format = shift;
@@ -29,11 +29,16 @@ sub test_format {
 
 ##################################################
 # enableFormat() functional coverage tests
+#   make sure that a format imported using enableFormat() will properly populate the
+#   Eanbled hash using _io_functions()
 ##################################################
-test_format( 'STL', 'CAD::Mesh3D::STL', input => qr/not yet debugged inputting from STL/ );
+enableFormat('STL');
+test_format( 'STL', 'CAD::Mesh3D::STL' );
 
 ##################################################
 # enableFormat(): missing input/output functions
+#   mock up a couple of formats, each missing one
+#   "import" manually, rather than by enableFormat()
 ##################################################
 sub mockedFormat::MissingInput::_io_functions { output => sub { 'output' } }
 $INC{'mockedFormat/MissingInput.pm'} = 1;
@@ -49,6 +54,8 @@ is( input( MissingOutput => 'dne' ), 'input', 'input( MissingOutput => file) giv
 
 ##################################################
 # enableFormat(): error testing
+#   intentionally create error conditions to verify
+#   exception-throwing
 ##################################################
 throws_ok { enableFormat(); } qr/requires name of format/, 'Error Handling: enableFormat(missing format name)';
 throws_ok { enableFormat( 'DoesNotExist' ); } qr/could not import CAD::Mesh3D::DoesNotExist/, 'Error Handling: enableFormat(unavailable module selected)';

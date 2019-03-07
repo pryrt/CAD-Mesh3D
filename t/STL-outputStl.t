@@ -1,7 +1,7 @@
 use 5.010;      # v5.8 equired for in-memory files; v5.10 required for named backreferences and // in the commented-note() calls
 use strict;
 use warnings;
-use Test::More tests => 5 + 5*28 + 3 + 5;
+use Test::More tests => 5 + 5*28 + 3 + 3;
 
 use CAD::Mesh3D qw(+STL :all);
 
@@ -218,11 +218,5 @@ throws_ok { output($mesh, STL => '/path/does/not/exist') } qr/output.*: cannot w
 
 # output(): non-recognized $ascii argument
 throws_ok { output($mesh, STL => \*STDERR, 'bad') } qr/output.*: unknown asc\/bin switch "bad"/, 'Error Handling: output(bad ascii switch)';
-
-# input(): not yet defined
-throws_ok { my $mesh = input(STL => \*STDIN) } qr/Sorry, CAD::Mesh3D::STL's developer has not yet debugged inputting from STL/, 'Error Handling: input() has not been implemented yet';
-
-# input(): not yet defined
-throws_ok { my $mesh = CAD::Mesh3D::STL::inputStl(\*STDIN) } qr/\QCAD::Mesh3D::STL::inputStl(): not yet implemented, sorry.\E/, 'Error Handling: direct call to inputStl(), which has not been implemented yet';
 
 done_testing();
