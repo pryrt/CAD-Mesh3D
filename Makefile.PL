@@ -84,6 +84,11 @@ sub MY::postamble {
     return <<'POSTAMBLE';
 TEST_D = $(ABSPERLRUN) -MExtUtils::Command -e test_d --
 
+test :: attemptPatch
+
+attemptPatch ::
+	$(PERL) patch/attemptWinPatch.pl
+
 testcover :: lib/CAD/Mesh3D.pm
 	$(NOECHO) cover -test -report html
 
@@ -102,6 +107,8 @@ distauthtest :: disttest
 realclean ::
 	$(NOECHO) ( $(TEST_D) cover_db && $(RM_RF) cover_db ) || $(ECHO) realclean:: skip "rm -rf cover_db"
 	$(NOECHO) ( $(TEST_F) MYMETA.json.lock && $(RM_RF) MYMETA.json.lock ) || $(ECHO) realclean:: skip "rm -rf MYMETA.json.lock"
+	$(NOECHO) ( $(TEST_D) lib/CAD/Format && $(RM_RF) lib/CAD/Format ) || $(ECHO) realclean:: skip "rm -rf lib/CAD/Format"
+
 
 # auto-generate the README from the lib/CAD/Mesh3D.pm
 README.md :: lib/CAD/Mesh3D.pm Makefile.PL
