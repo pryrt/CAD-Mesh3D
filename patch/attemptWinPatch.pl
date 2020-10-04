@@ -9,19 +9,29 @@ require CAD::Format::STL;
 
 select STDERR;
 
-if ( v0.2.1 ne $CAD::Format::STL::VERSION ) {
+if ( v0.2.1 lt $CAD::Format::STL::VERSION ) {
     print "CAD::Format::STL ", CAD::Format::STL->VERSION, " should be okay.\n";
-    #exit;
+    exit;
 }
 
-print "CAD::Format::STL ", CAD::Format::STL->VERSION, " may need patching.\n";
+my $dest = shift @ARGV or die "no destination file\n";
+
+print "Patching CAD::Format::STL ", CAD::Format::STL->VERSION, " using \"$dest\".\n";
 
 # assuming I've already determined it needs patching, create a destination for the patch
-patch('patch/STL.pm', 'lib/CAD/Format', 'STL.pm');
+patch('patch/STL.pm', $dest);
+print qx{ls -latrR $dest};
+
+# needs to be in both lib and blib/lib
+patch('patch/STL.pm', "blib/$dest");
+print qx{ls -latrR blib/$dest};
 
 exit;
 sub patch {
-    my ($input, $outdir, $outfile) = @_;
+    my ($input, $outfile) = @_;
+
+    (my $outdir = $outfile) =~ s/STL.pm$//;
+    $outfile =~ s{^.*/}{};
 
     -w $outdir or mkdir $outdir or warn "Problem making $outdir: $!\n";
     -w $outdir or die "Cannot put patched CAD::Format::STL into $outdir/$outfile";

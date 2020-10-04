@@ -502,8 +502,6 @@ have been warned.
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
-=cut
-
 =head1 PATCHED BY CAD::Mesh3D
 
 Per the LICENSE following the same terms as Perl, the
@@ -521,6 +519,8 @@ used in Windows.
 If the original author ever publishes a newer version that doesn't
 contain the bug, this patched version will not be installed by
 CAD::Mesh3D's installation procedure.
+
+=cut
 
 # vi:ts=2:sw=2:et:sta
 1;

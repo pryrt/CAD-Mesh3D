@@ -15,6 +15,9 @@ use 5.010;
         'Carp'                  => 0,
         'CAD::Format::STL'      => v0.2.1,
     },
+    'PL_FILES'      => {
+        'patch/attemptWinPatch.pl' => 'lib/CAD/Format/STL.pm'
+    },
 );
 
 {
@@ -83,11 +86,6 @@ sub MY::postamble {
     my (undef,%h) = @_;
     return <<'POSTAMBLE';
 TEST_D = $(ABSPERLRUN) -MExtUtils::Command -e test_d --
-
-test :: attemptPatch
-
-attemptPatch ::
-	$(PERL) patch/attemptWinPatch.pl
 
 testcover :: lib/CAD/Mesh3D.pm
 	$(NOECHO) cover -test -report html
