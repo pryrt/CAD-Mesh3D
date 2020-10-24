@@ -1,0 +1,24 @@
+CHANGES
+files/cube.stl
+files/cube_binary.stl
+lib/CAD/Mesh3D.pm
+lib/CAD/Mesh3D/ProvideNewFormat.pod
+lib/CAD/Mesh3D/STL.pm
+LICENSE
+Makefile.PL
+MANIFEST			This list of files
+patch/attemptWinPatch.pl
+patch/STL.pm
+README.md
+t/00-use.t
+t/10-initialize.t
+t/20-math.t
+t/40-format.t
+t/99-fault.t
+t/STL-inputStl.t
+t/STL-outputStl.t
+t/stl_bin_crlf.t
+xt/00-sign.t
+xt/README.md
+xt/stl_load.t
+xt/stl_save.t
