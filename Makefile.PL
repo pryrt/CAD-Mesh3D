@@ -13,7 +13,10 @@ use 5.010;
         'warnings'              => 0,
         'strict'                => 0,
         'Carp'                  => 0,
-        'CAD::Format::STL'      => 0,
+        'CAD::Format::STL'      => v0.2.1,
+    },
+    'PL_FILES'      => {
+        'patch/attemptWinPatch.pl' => 'lib/CAD/Format/STL.pm'
     },
 );
 
@@ -102,6 +105,8 @@ distauthtest :: disttest
 realclean ::
 	$(NOECHO) ( $(TEST_D) cover_db && $(RM_RF) cover_db ) || $(ECHO) realclean:: skip "rm -rf cover_db"
 	$(NOECHO) ( $(TEST_F) MYMETA.json.lock && $(RM_RF) MYMETA.json.lock ) || $(ECHO) realclean:: skip "rm -rf MYMETA.json.lock"
+	$(NOECHO) ( $(TEST_D) lib/CAD/Format && $(RM_RF) lib/CAD/Format ) || $(ECHO) realclean:: skip "rm -rf lib/CAD/Format"
+
 
 # auto-generate the README from the lib/CAD/Mesh3D.pm
 README.md :: lib/CAD/Mesh3D.pm Makefile.PL

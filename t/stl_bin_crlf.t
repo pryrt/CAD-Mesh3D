@@ -20,6 +20,10 @@ This test determines whether your version of CAD::Format::STL has had
 the bug removed and/or has been patched.
 EOH
 
+diag "\n";
+diag "CAD::Format::STL ", CAD::Format::STL->VERSION(), " from ", $INC{'CAD/Format/STL.pm'};
+diag "\n"x2;
+
 note "\n";
 note "Floats with 0x0D (CR), 0x0A (LF), or both (CRLF) embedded in the bigendian representation";
 sub hex2float { unpack 'f>' => pack 'H*' => shift }
