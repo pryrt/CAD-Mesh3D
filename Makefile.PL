@@ -15,9 +15,6 @@ use 5.010;
         'Carp'                  => 0,
         'CAD::Format::STL'      => v0.2.1,
     },
-    'PL_FILES'      => {
-        'patch/attemptWinPatch.pl' => 'lib/CAD/Format/STL.pm'
-    },
 );
 
 {

@@ -274,7 +274,9 @@ near line 348, add the line C<binmode $fh;> as the third line of code inside the
 The author of CAD::Format::STL has been notified, both through the
 L<issue tracker|https://rt.cpan.org/Public/Bug/Display.html?id=83595>, and responding to requests to
 fix the bug.  Hopefully, when the author has time, a new version of CAD::Format::STL will be released
-with the bug fixed.  Until then, patching the module is the best workaround.
+with the bug fixed.  Until then, patching the module is the best workaround.  A patched copy of v0.2.1.001
+is available through L<this github link|https://github.com/pryrt/CAD-Mesh3D/blob/master/patch/STL.pm>,
+or in the C<patch> folder of the distribution.
 
 =head1 AUTHOR
 
@@ -282,7 +284,7 @@ Peter C. Jones C<E<lt>petercj AT cpan DOT orgE<gt>>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2017,2018,2019 Peter C. Jones
+Copyright (C) 2017,2018,2019,2020 Peter C. Jones
 
 =head1 LICENSE
 

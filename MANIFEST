@@ -17,8 +17,8 @@ t/40-format.t
 t/99-fault.t
 t/STL-inputStl.t
 t/STL-outputStl.t
-t/stl_bin_crlf.t
 xt/00-sign.t
 xt/README.md
+xt/stl_bin_crlf.t
 xt/stl_load.t
 xt/stl_save.t
