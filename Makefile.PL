@@ -84,6 +84,8 @@ sub MY::postamble {
     return <<'POSTAMBLE';
 TEST_D = $(ABSPERLRUN) -MExtUtils::Command -e test_d --
 
+MY_COPYRIGHT = Copyright (C) 2017,2018,2019,2020 Peter C. Jones
+
 testcover :: lib/CAD/Mesh3D.pm
 	$(NOECHO) cover -test -report html
 
@@ -104,6 +106,15 @@ realclean ::
 	$(NOECHO) ( $(TEST_F) MYMETA.json.lock && $(RM_RF) MYMETA.json.lock ) || $(ECHO) realclean:: skip "rm -rf MYMETA.json.lock"
 	$(NOECHO) ( $(TEST_D) lib/CAD/Format && $(RM_RF) lib/CAD/Format ) || $(ECHO) realclean:: skip "rm -rf lib/CAD/Format"
 
+# auto-populate the VERSION in the submodules from $(VERSION), which comes from main module
+populateversion :: lib/CAD/Mesh3D.pm
+	$(NOECHO) $(ECHO) want to auto-populate VERSION in all sub-modules: $(VERSION)
+	$(PERL) -pi -e "s/^(\s*our\s+.VERSION\s*=).*?;.*?$$/\1 '$(VERSION)'; # auto-populated from CAD::Mesh3D/" lib/CAD/Mesh3D/STL.pm
+
+# auto-populate COPYRIGHT line
+populatecopyright ::
+	$(NOECHO) $(ECHO) want to auto-populate COPYRIGHT
+	$(PERL) -pi -e "s/^\QCopyright (C)\E.*$$/$(MY_COPYRIGHT)/" lib/CAD/Mesh3D.pm lib/CAD/Mesh3D/STL.pm lib/CAD/Mesh3D/ProvideNewFormat.pod
 
 # auto-generate the README from the lib/CAD/Mesh3D.pm
 README.md :: lib/CAD/Mesh3D.pm Makefile.PL
@@ -117,7 +128,7 @@ LICENSE :: lib/CAD/Mesh3D.pm Makefile.PL
 	pod2text LICENSE.pod LICENSE
 	$(RM_F) LICENSE.pod
 
-docs :: README.md LICENSE
+docs :: manifest populateversion populatecopyright README.md LICENSE
 
 POSTAMBLE
 }
