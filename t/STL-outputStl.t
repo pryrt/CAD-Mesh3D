@@ -214,7 +214,7 @@ use Test::Exception;
 throws_ok { output($mesh, 'STL') } qr/output.*: requires file handle or name/, 'Error Handling: output(missing fh)';
 
 # output(): cannot write to fh
-throws_ok { output($mesh, STL => '/path/does/not/exist') } qr/output.*: cannot write to.*No such file or directory/, 'Error Handling: output(missing fh)';
+throws_ok { output($mesh, STL => '/path/does/not/exist') } qr/output.*: cannot write to/, 'Error Handling: output(missing fh)';
 
 # output(): non-recognized $ascii argument
 throws_ok { output($mesh, STL => \*STDERR, 'bad') } qr/output.*: unknown asc\/bin switch "bad"/, 'Error Handling: output(bad ascii switch)';
