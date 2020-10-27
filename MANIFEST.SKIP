@@ -24,5 +24,6 @@
 # module-specific
 #########################################
 ^RELEASE.md$
+^patch/$
 
 # end with a blank line
