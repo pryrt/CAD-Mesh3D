@@ -272,11 +272,10 @@ C<sub _write_binary>, add the line C<binmode $fh;> as the fourth line of code in
 near line 348, add the line C<binmode $fh;> as the third line of code inside the C<sub _read_binary>.
 
 The author of CAD::Format::STL has been notified, both through the
-L<issue tracker|https://rt.cpan.org/Public/Bug/Display.html?id=83595>, and responding to requests to
+L<issue tracker|https://rt.cpan.org/Public/Bug/Display.html?id=83595>, and responded to requests to
 fix the bug.  Hopefully, when the author has time, a new version of CAD::Format::STL will be released
 with the bug fixed.  Until then, patching the module is the best workaround.  A patched copy of v0.2.1.001
-is available through L<this github link|https://github.com/pryrt/CAD-Mesh3D/blob/master/patch/STL.pm>,
-or in the C<patch> folder of the distribution.
+is available through L<this github link|https://github.com/pryrt/CAD-Mesh3D/blob/master/patch/STL.pm>.
 
 =head1 AUTHOR
 
