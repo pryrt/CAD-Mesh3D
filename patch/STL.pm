@@ -1,4 +1,6 @@
-package CAD::Format::STL;
+package
+    # hide from PAUSE indexer, because my distro isn't the official provider; this is just a convenience patch
+    CAD::Format::STL;
 $VERSION = v0.2.1.001; # patched
 
 use warnings;

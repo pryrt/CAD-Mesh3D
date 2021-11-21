@@ -1,5 +1,10 @@
 Revision history for Perl distribution Win32-Mechanize-NotepadPlusPlus
 
+v0.004 2021-Nov-21
+    - My patched CAD::Format::STL was still being indexed, despite notice
+      being auto-installed.  Added no_index and did the multi-line package
+      command to try to avoid being indexed (#7)
+
 v0.003 2020-Oct-25
     - Don't auto-patch CAD::Format::STL, so move the binmode check back to xt,
       get rid of the patching script, and provide a link to the patched file

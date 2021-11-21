@@ -15,6 +15,9 @@ use 5.010;
         'Carp'                  => 0,
         'CAD::Format::STL'      => v0.2.1,
     },
+    'realclean'     => {
+        FILES => 'cover_db LICENSE.pod README.pod MYMETA.json.lock lib/CAD/Format',
+    },
 );
 
 {
@@ -37,6 +40,9 @@ use 5.010;
                 },
             },
             keywords => [ '3D', 'CAD', 'STL'],
+            no_index => {
+                directory   => [ 'patch' ], # don't include packages in patch/ in the indexer report
+            },
         },
         # automatically determine the versions for 'provides'; MM->parse_version exists as of MM v6.31, so not a problem with >= 6.46
         #   => this comes out right when printed... but MYMETA.* shows values that look wrong
@@ -84,7 +90,7 @@ sub MY::postamble {
     return <<'POSTAMBLE';
 TEST_D = $(ABSPERLRUN) -MExtUtils::Command -e test_d --
 
-MY_COPYRIGHT = Copyright (C) 2017,2018,2019,2020 Peter C. Jones
+MY_COPYRIGHT = Copyright (C) 2017,2018,2019,2020,2021 Peter C. Jones
 
 testcover :: lib/CAD/Mesh3D.pm
 	$(NOECHO) cover -test -report html
@@ -101,10 +107,11 @@ distauthtest :: disttest
 	cd $(DISTVNAME) && $(TEST_D) xt && $(MAKE) test TEST_FILES='xt/*.t'
 
 #coverclean :: realclean
-realclean ::
-	$(NOECHO) ( $(TEST_D) cover_db && $(RM_RF) cover_db ) || $(ECHO) realclean:: skip "rm -rf cover_db"
-	$(NOECHO) ( $(TEST_F) MYMETA.json.lock && $(RM_RF) MYMETA.json.lock ) || $(ECHO) realclean:: skip "rm -rf MYMETA.json.lock"
-	$(NOECHO) ( $(TEST_D) lib/CAD/Format && $(RM_RF) lib/CAD/Format ) || $(ECHO) realclean:: skip "rm -rf lib/CAD/Format"
+# moved "realclean ::" into the realclean=> element of the %mm_args hash
+#realclean ::
+#	$(NOECHO) ( $(TEST_D) cover_db && $(RM_RF) cover_db ) || $(ECHO) realclean:: skip "rm -rf cover_db"
+#	$(NOECHO) ( $(TEST_F) MYMETA.json.lock && $(RM_RF) MYMETA.json.lock ) || $(ECHO) realclean:: skip "rm -rf MYMETA.json.lock"
+#	$(NOECHO) ( $(TEST_D) lib/CAD/Format && $(RM_RF) lib/CAD/Format ) || $(ECHO) realclean:: skip "rm -rf lib/CAD/Format"
 
 # auto-populate the VERSION in the submodules from $(VERSION), which comes from main module
 populateversion :: lib/CAD/Mesh3D.pm

@@ -5,7 +5,7 @@ use Carp;
 use 5.010;  # M::V::R requires 5.010, so might as well make use of the defined-or // notation :-)
 use CAD::Format::STL qw//;
 use CAD::Mesh3D qw/:create/;
-our $VERSION = '0.003'; # auto-populated from CAD::Mesh3D
+our $VERSION = '0.004'; # auto-populated from CAD::Mesh3D
 
 =head1 NAME
 
@@ -283,7 +283,7 @@ Peter C. Jones C<E<lt>petercj AT cpan DOT orgE<gt>>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2017,2018,2019,2020 Peter C. Jones
+Copyright (C) 2017,2018,2019,2020,2021 Peter C. Jones
 
 =head1 LICENSE
 
