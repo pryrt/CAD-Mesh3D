@@ -277,6 +277,39 @@ fix the bug.  Hopefully, when the author has time, a new version of CAD::Format:
 with the bug fixed.  Until then, patching the module is the best workaround.  A patched copy of v0.2.1.001
 is available through L<this github link|https://github.com/pryrt/CAD-Mesh3D/blob/master/patch/STL.pm>.
 
+=cut
+BEGIN {
+    use version 0.77;
+    my $v = version->parse($CAD::Format::STL::VERSION);
+    #print STDERR "CAD::Format::STL version = $v\n";
+
+    my $original_read_binary = \&CAD::Format::STL::_read_binary;
+    #print STDERR "\toriginal_read_binary = $original_read_binary\n";
+    sub _patch_read_binary {
+        die "patch read"; #binmore
+    }
+
+    my $original_save_binary = \&CAD::Format::STL::_save_binary;
+    #print STDERR "\toriginal_save_binary = $original_save_binary\n";
+    sub _override_save {
+        die "patch read";
+    }
+
+    if( $v <= version->parse(v0.2.1) ) {
+        #print STDERR "\tneeds to be patched\n";
+        no warnings 'redefine';
+        *CAD::Format::STL::_read_binary = \&_patch_read_binary;
+        *CAD::Format::STL::_save_binary = \&_patch_save_binary;
+    } else {
+        1;
+        #print STDERR "\tdoesn't need patching\n";
+    }
+
+    #print STDERR "\toriginal_read_binary = " . \&CAD::Format::STL::_read_binary . "\n";
+    #print STDERR "\toriginal_save_binary = " . \&CAD::Format::STL::_save_binary . "\n";
+
+}
+
 =head1 AUTHOR
 
 Peter C. Jones C<E<lt>petercj AT cpan DOT orgE<gt>>
