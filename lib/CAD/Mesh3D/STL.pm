@@ -7,6 +7,25 @@ use CAD::Format::STL qw//;
 use CAD::Mesh3D qw/:create/;
 our $VERSION = '0.004'; # auto-populated from CAD::Mesh3D
 
+# start by deciding which formatter to use
+our $STL_FORMATTER;
+BEGIN {
+    use version 0.77;
+    my $v = version->parse($CAD::Format::STL::VERSION);
+    #print STDERR "CAD::Format::STL version = $v\n";
+    #print STDERR "> $_\n" for @INC;
+
+    if( $v <= version->parse(v0.2.1) ) {
+        $STL_FORMATTER = 'CAD::Mesh3D::FormatSTL';
+        eval "require $STL_FORMATTER";
+    } else {
+        $STL_FORMATTER = 'CAD::Format::STL';
+    }
+
+    #print STDERR "\tFinal formatter: $STL_FORMATTER\n";
+}
+
+
 =head1 NAME
 
 CAD::Mesh3D::STL - Used by CAD::Mesh3D to provide the STL format-specific functionality
@@ -144,9 +163,9 @@ sub outputStl {
     binmode $fh unless $asc;
 
     #############################################################################################
-    # use CAD::Format::STL to output the STL
+    # use $STL_FORMATTER package to output the STL
     #############################################################################################
-    my $stl = CAD::Format::STL->new;
+    my $stl = $STL_FORMATTER->new;
     my $part = $stl->add_part("my part", @$mesh);
 
     if($asc) {
@@ -227,7 +246,7 @@ sub inputStl {
         croak "\ninputStl($file, '$asc_or_bin'): ERROR: unknown mode '$asc_or_bin'\n ";
     }
 
-    my $stl = CAD::Format::STL->new()->load(@pass_args); # CFS claims it take handle or name
+    my $stl = $STL_FORMATTER->new()->load(@pass_args); # CFS claims it take handle or name
         # TODO: bug report <https://rt.cpan.org/Public/Dist/Display.html?Name=CAD-Format-STL>:
         #   examples show ->reader() and ->writer(), but that example code doesn't compile
     my @stlf = $stl->part()->facets();
@@ -276,39 +295,6 @@ L<issue tracker|https://rt.cpan.org/Public/Bug/Display.html?id=83595>, and respo
 fix the bug.  Hopefully, when the author has time, a new version of CAD::Format::STL will be released
 with the bug fixed.  Until then, patching the module is the best workaround.  A patched copy of v0.2.1.001
 is available through L<this github link|https://github.com/pryrt/CAD-Mesh3D/blob/master/patch/STL.pm>.
-
-=cut
-BEGIN {
-    use version 0.77;
-    my $v = version->parse($CAD::Format::STL::VERSION);
-    #print STDERR "CAD::Format::STL version = $v\n";
-
-    my $original_read_binary = \&CAD::Format::STL::_read_binary;
-    #print STDERR "\toriginal_read_binary = $original_read_binary\n";
-    sub _patch_read_binary {
-        die "patch read"; #binmore
-    }
-
-    my $original_save_binary = \&CAD::Format::STL::_save_binary;
-    #print STDERR "\toriginal_save_binary = $original_save_binary\n";
-    sub _override_save {
-        die "patch read";
-    }
-
-    if( $v <= version->parse(v0.2.1) ) {
-        #print STDERR "\tneeds to be patched\n";
-        no warnings 'redefine';
-        *CAD::Format::STL::_read_binary = \&_patch_read_binary;
-        *CAD::Format::STL::_save_binary = \&_patch_save_binary;
-    } else {
-        1;
-        #print STDERR "\tdoesn't need patching\n";
-    }
-
-    #print STDERR "\toriginal_read_binary = " . \&CAD::Format::STL::_read_binary . "\n";
-    #print STDERR "\toriginal_save_binary = " . \&CAD::Format::STL::_save_binary . "\n";
-
-}
 
 =head1 AUTHOR
 
