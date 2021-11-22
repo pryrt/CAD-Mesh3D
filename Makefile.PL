@@ -38,6 +38,10 @@ use 5.010;
         no_index => {
             directory   => [ 'patch' ], # don't include packages in patch/ in the indexer report
         },
+        provides => {
+            'CAD::Mesh3D' => { file => 'lib/CAD/Mesh3D.pm' },
+            'CAD::Mesh3D::STL' => { file => 'lib/CAD/Mesh3D/STL.pm' },
+        },
     },
     'LICENSE' => 'perl_5',          # EUMM 6.31
     'MIN_PERL_VERSION' => '5.10.0', # EUMM 6.48
@@ -69,7 +73,7 @@ use 5.010;
         # automatically determine the versions for 'provides'; MM->parse_version exists as of MM v6.31, so not a problem with >= 6.46
         my $v = ''.MM->parse_version( $mm_args{VERSION_FROM} );
         for my $k ( keys %{ $mm_args{META_MERGE}{provides} }) {
-            $mm_args{META_MERGE}{provides}{version} = $v;
+            $mm_args{META_MERGE}{provides}{$k}{version} = $v;
         };
     }
 
