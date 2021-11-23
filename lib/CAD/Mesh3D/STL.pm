@@ -7,6 +7,25 @@ use CAD::Format::STL qw//;
 use CAD::Mesh3D qw/:create/;
 our $VERSION = '0.004'; # auto-populated from CAD::Mesh3D
 
+# start by deciding which formatter to use
+our $STL_FORMATTER;
+BEGIN {
+    use version 0.77;
+    my $v = version->parse($CAD::Format::STL::VERSION);
+    #print STDERR "CAD::Format::STL version = $v\n";
+    #print STDERR "> $_\n" for @INC;
+
+    if( $v <= version->parse(v0.2.1) ) {
+        $STL_FORMATTER = 'CAD::Mesh3D::FormatSTL';
+        eval "require $STL_FORMATTER";
+    } else {
+        $STL_FORMATTER = 'CAD::Format::STL';
+    }
+
+    #print STDERR "\tFinal formatter: $STL_FORMATTER\n";
+}
+
+
 =head1 NAME
 
 CAD::Mesh3D::STL - Used by CAD::Mesh3D to provide the STL format-specific functionality
@@ -144,9 +163,9 @@ sub outputStl {
     binmode $fh unless $asc;
 
     #############################################################################################
-    # use CAD::Format::STL to output the STL
+    # use $STL_FORMATTER package to output the STL
     #############################################################################################
-    my $stl = CAD::Format::STL->new;
+    my $stl = $STL_FORMATTER->new;
     my $part = $stl->add_part("my part", @$mesh);
 
     if($asc) {
@@ -227,7 +246,7 @@ sub inputStl {
         croak "\ninputStl($file, '$asc_or_bin'): ERROR: unknown mode '$asc_or_bin'\n ";
     }
 
-    my $stl = CAD::Format::STL->new()->load(@pass_args); # CFS claims it take handle or name
+    my $stl = $STL_FORMATTER->new()->load(@pass_args); # CFS claims it take handle or name
         # TODO: bug report <https://rt.cpan.org/Public/Dist/Display.html?Name=CAD-Format-STL>:
         #   examples show ->reader() and ->writer(), but that example code doesn't compile
     my @stlf = $stl->part()->facets();
