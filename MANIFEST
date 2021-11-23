@@ -1,7 +1,10 @@
 .github/workflows/perl-ci.yml
 CHANGES
 files/cube.stl
+files/cube_badfacet.stl
 files/cube_binary.stl
+files/cube_binary84.stl
+files/cube_tiny.stl
 lib/CAD/Mesh3D.pm
 lib/CAD/Mesh3D/FormatSTL.pm
 lib/CAD/Mesh3D/ProvideNewFormat.pod
