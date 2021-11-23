@@ -11,6 +11,15 @@ use CAD::Format::STL::part;
 
 CAD::Mesh3D::FormatSTL - read/write 3D stereolithography files
 
+=head1 DON'T USE
+
+Please don't use this module.  CAD::Mesh3D::FormatSTL exists only for
+L<CAD::Mesh3D::STL> to use during testing and to overcome limitations
+in L<CAD::Format::STL>.  If you think you want to use this directly,
+use L<CAD::Format::STL> instead, and encourage the author to implement
+and release the known bug-fix that is in the existing issues, possibly
+patching it per the instructions in the L<CAD::Mesh3D::STL/"Known Issues">.
+
 =head1 SYNOPSIS
 
 Reading:
