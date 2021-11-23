@@ -6,6 +6,7 @@ use strict;
 use 5.010;      # for //
 
 use Test::More;
+use Test::Exception;
 
 use CAD::Mesh3D::FormatSTL;
 
@@ -39,11 +40,8 @@ is(scalar($part->facets), 12, 'twelve triangles');
 
 #################################################################
 # cover a coule of the sub-new deficiencies
-$stl->new or die "ack2";            # create new from the current
-diag __LINE__, "\t", $@;
-diag "expecting error if v0.2.1-based:";
-eval { CAD::Mesh3D::FormatSTL::new() };   # use function call rather than class method; this doesn't give valid blessing, but still works
-diag "final message: ", $@;
+lives_ok { $stl->new() } 'coverage: create new object from existing object';
+lives_ok { CAD::Mesh3D::FormatSTL::new('0') } 'coverage: accidentally do new() as function rather than class method';
 
 #################################################################
 # cover all of binary=> and ascii=>
@@ -67,10 +65,27 @@ foreach my $file ('files/cube.stl', 'files/cube_binary.stl') {
   $stl = CAD::Mesh3D::FormatSTL->new or BAIL_OUT("->new() failed in line __".__LINE__."__");
   $str = "load(binary => $file)";
   $expect = ($file =~ /binary/) ? $stl : undef;
-  $check = eval {$stl->load(binary => $file)};
+  $check = eval { $stl->load(binary => $file) };
   #diag "$str check = " . ($check//'<undef>') . " vs expect = " . ($expect//'<undef>') . "\n";
   ok($expect ? !$@ : $@, "$str \$\@") or diag("$str >>$@<<");
   is($check, $expect, "$str value");
+}
+
+# unspecified ASCII -- not 84 bytes
+foreach my $file ( 'files/cube_tiny.stl' ) {
+  my $stl = CAD::Mesh3D::FormatSTL->new or BAIL_OUT("->new() failed in line __".__LINE__."__");
+  my $str = "load($file)";
+  my $expect = $stl;
+  my $check = eval {$stl->load($file)};
+  #diag "$str check = " . ($check//'<undef>') . " vs expect = " . ($expect//'<undef>') . "\n";
+  ok($expect ? !$@ : $@, "load(): assume ASCII because fewer than 80 bytes: $str \$\@") or diag("$str >>$@<<");
+  is($check, $expect, "load(): assume ASCII because fewer than 80 bytes: $str value");
+}
+
+# unspecified BINARY -- 0 facets (84 bytes)
+foreach my $file ( 'files/cube_binary84.stl' ) {
+  my $stl = CAD::Mesh3D::FormatSTL->new or BAIL_OUT("->new() failed in line __".__LINE__."__");
+  throws_ok { $stl->load($file); } qr/\Qdetection failed - no facets?/, 'load() error: binary with no facets';
 }
 
 # cover too many arguments to load
@@ -78,8 +93,8 @@ foreach my $file ('files/cube.stl', 'files/cube_binary.stl') {
   my $stl = CAD::Mesh3D::FormatSTL->new or BAIL_OUT("->new() failed in line __".__LINE__."__");
   my $expect = undef;
   my $check = eval {$stl->load(too => many => arguments => 1)} ;
-  ok($@, "too many arguments \$\@");
-  is($check, $expect, "too many arguments value");
+  ok($@, "load(): too many arguments \$\@");
+  is($check, $expect, "load(): too many arguments value");
 }
 
 # allow filehandle loading
@@ -95,6 +110,12 @@ foreach my $file ( 'files/cube.stl' ) {
   is($check, $expect, "$str value");
 }
 
+# STDIN filehandle: non-seekable without explicit mode
+{
+  my $stl = CAD::Mesh3D::FormatSTL->new or BAIL_OUT("->new() failed in line __".__LINE__."__");
+  throws_ok { $stl->load(\*STDIN); } qr/non-seekable/, 'load(\*STDIN): non-seekable';
+}
+
 # non-existent file
 foreach my $file ( 'files/dne.stl' ) {
   my $stl = CAD::Mesh3D::FormatSTL->new or BAIL_OUT("->new() failed in line __".__LINE__."__");
@@ -108,7 +129,7 @@ foreach my $file ( 'files/dne.stl' ) {
 # error: no parts
 {
     my $stl = CAD::Mesh3D::FormatSTL::->new or BAIL_OUT("->new() failed in line __".__LINE__."__");
-    throws_ok { $stl->part(1) } qr/file has no parts/, 'verify stl with no parts';
+    throws_ok { $stl->part(1) } qr/file has no parts/, 'new(): verify stl with no parts';
 }
 
 
