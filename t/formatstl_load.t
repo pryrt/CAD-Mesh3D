@@ -88,6 +88,12 @@ foreach my $file ( 'files/cube_binary84.stl' ) {
   throws_ok { $stl->load($file); } qr/\Qdetection failed - no facets?/, 'load() error: binary with no facets';
 }
 
+# ascii with bad facet
+foreach my $file ( 'files/cube_badfacet.stl' ) {
+  my $stl = CAD::Mesh3D::FormatSTL->new or BAIL_OUT("->new() failed in line __".__LINE__."__");
+  throws_ok { $stl->load(ascii => $file); } qr/\Qfacet doesn't start with 'outer loop'/, 'load() error: ascii with bad facet';
+}
+
 # cover too many arguments to load
 {
   my $stl = CAD::Mesh3D::FormatSTL->new or BAIL_OUT("->new() failed in line __".__LINE__."__");
