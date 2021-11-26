@@ -32,6 +32,7 @@ as being useful.
 Peter C. Jones `<petercj AT cpan DOT org>`
 
 <div>
+    <a href="https://metacpan.org/pod/CAD::Mesh3D"><img src="https://img.shields.io/cpan/v/CAD-Mesh3D.svg?colorB=00CC00" alt="" title="metacpan"></a>
     <a href="https://github.com/pryrt/CAD-Mesh3D/issues"><img src="https://img.shields.io/github/issues/pryrt/CAD-Mesh3D.svg" alt="issues" title="issues"></a>
     <a href="https://ci.appveyor.com/project/pryrt/CAD-Mesh3D"><img src="https://ci.appveyor.com/api/projects/status/bc5jt6b2bjmpig5x?svg=true" alt="appveyor build status" title="appveyor build status"></a>
     <a href="https://travis-ci.org/pryrt/CAD-Mesh3D"><img src="https://travis-ci.org/pryrt/CAD-Mesh3D.svg?branch=master" alt="travis build status" title="travis build status"></a>
