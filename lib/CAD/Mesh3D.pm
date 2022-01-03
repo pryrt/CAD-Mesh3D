@@ -250,8 +250,8 @@ sub addToMesh {
  use CAD::Mesh3D qw/:math/;
 
 Most of the math on the three-dimensional B<Vertexes> are handled by
-L<Math::Matrix::Real>; all the matrix methods will work on B<Vertexes>,
-as documented for L<Math::Matrix::Real>.
+L<Math::Vector::Real>; all the vector methods will work on B<Vertexes>,
+as documented for L<Math::Vector::Real>.
 However, three-dimensional math can take some special functions that
 aren't included in the generic matrix library. CAD::Mesh3D implements
 a few of these special-purpose functions for you.
