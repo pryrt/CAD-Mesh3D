@@ -159,8 +159,8 @@ sub createQuadrangleFacets {
 
  my $v = createVertex(1,2,3);
  my $x = getx($v); # 1
- my $y = getx($v); # 2
- my $z = getx($v); # 3
+ my $y = gety($v); # 2
+ my $z = getz($v); # 3
 
 Grabs the individual x, y, or z coordinate from a vertex
 
