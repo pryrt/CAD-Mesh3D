@@ -273,13 +273,13 @@ the vector has a magnitude of 1.0.
 
 sub CAD::Mesh3D::Vertex::unitDelta {
     # TODO = argument checking
-    #my ($beg, $end) = @_;
+    my ($beg, $end) = @_;
     #my $dx = $end->[XCOORD] - $beg->[XCOORD];
     #my $dy = $end->[YCOORD] - $beg->[YCOORD];
     #my $dz = $end->[ZCOORD] - $beg->[ZCOORD];
     #my $m = sqrt( $dx*$dx + $dy*$dy + $dz*$dz );
     #return $m ? [ $dx/$m, $dy/$m, $dz/$m ] : [0,0,0];
-    return Math::Vector::Real::versor($_[1] - $_[0]);
+    return ($end - $beg)->versor;
 }
 
 sub unitDelta {
